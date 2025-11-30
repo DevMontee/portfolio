@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Sensor Robotic Grasping - Montee Oluwole</title>
+    <link rel="icon" type="image/jpeg" href="images/Hand_3.JPG">
+
+        <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=JetBrains+Mono:wght@300;400;500&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0a0e27;
+            --secondary: #1a1f3a;
+            --accent: #00d4ff;
+            --accent-glow: rgba(0, 212, 255, 0.4);
+            --copper: #c87533;
+            --text: #e4e6eb;
+            --text-dim: #9ba3af;
+            --grid: rgba(0, 212, 255, 0.08);
+            --transition: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Loading Animation */
+        .page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            transition: opacity 0.5s, visibility 0.5s;
+        }
+
+        .page-loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loader-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(0, 212, 255, 0.2);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Scroll Progress Indicator */
+        .scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--copper));
+            z-index: 9999;
+            transition: width 0.1s ease;
+        }
+
+        /* Scroll Fade Animations */
+        .scroll-fade {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: opacity 0.8s var(--transition), transform 0.8s var(--transition);
+        }
+
+        .scroll-fade.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+
+        body {
+            font-family: 'Manrope', sans-serif;
+            background: var(--primary);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .background-grid {
+
+        @keyframes gridPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+            position: fixed;
+
+        @keyframes gridPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+            top: 0;
+
+        @keyframes gridPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+            left: 0;
+
+        @keyframes gridPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+            width: 100%;
+
+        @keyframes gridPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+            height: 100%;
+
+        @keyframes gridPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+            background-image: 
+
+        @keyframes gridPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+                linear-gradient(var(--grid) 1px, transparent 1px),
+
+        @keyframes gridPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+                linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+
+        @keyframes gridPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+            background-size: 40px 40px;
+
+        @keyframes gridPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+            pointer-events: none;
+
+        @keyframes gridPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+            z-index: 0;
+
+        @keyframes gridPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+            opacity: 1;
+
+        @keyframes gridPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+            animation: gridPulse 20s ease-in-out infinite;
+
+        @keyframes gridPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        }
+
+        @keyframes gridPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        .glow-orb {
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--accent-glow), transparent 70%);
+            pointer-events: none;
+            z-index: 1;
+            filter: blur(80px);
+            opacity: 0.3;
+            animation: orbFloat 20s ease-in-out infinite;
+        }
+
+        .glow-orb-1 { top: -200px; left: -200px; }
+        .glow-orb-2 { bottom: -200px; right: -200px; animation-delay: -10s; }
+
+        @keyframes orbFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(50px, -50px) scale(1.1); }
+            50% { transform: translate(-30px, 50px) scale(0.9); }
+            75% { transform: translate(40px, 30px) scale(1.05); }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 40px;
+            position: relative;
+            z-index: 2;
+        }
+
+        header {
+            padding: 40px 0;
+            position: sticky;
+            top: 0;
+            background: rgba(10, 14, 39, 0.8);
+            backdrop-filter: blur(20px);
+            z-index: 100;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 28px;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--accent), var(--copper));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 2px;
+            text-decoration: none;
+        }
+
+        .back-link {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            transition: color 0.3s var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .back-link:hover {
+            color: var(--accent);
+        }
+
+        .project-hero {
+            padding: 80px 0 60px;
+        }
+
+        .project-number {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            color: var(--copper);
+            padding: 8px 20px;
+            background: rgba(200, 117, 51, 0.1);
+            border: 1px solid var(--copper);
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 30px;
+        }
+
+        .project-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 56px;
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #ffffff, var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .project-intro {
+            font-size: 22px;
+            color: var(--text-dim);
+            line-height: 1.8;
+            max-width: 900px;
+            margin-bottom: 40px;
+        }
+
+        .project-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 50px;
+        }
+
+        .tag {
+            padding: 10px 20px;
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--accent);
+            letter-spacing: 0.5px;
+        }
+
+        .hardware-section {
+            padding: 60px 0;
+            background: rgba(26, 31, 58, 0.3);
+            border-radius: 20px;
+            margin-bottom: 80px;
+        }
+
+        .hardware-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            box-shadow: 0 10px 40px rgba(0, 212, 255, 0.2);
+        }
+
+        .content-section {
+            padding: 60px 0;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 30px;
+        }
+
+        .section-subtitle {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--accent);
+            margin: 50px 0 20px;
+        }
+
+        .section-text {
+            font-size: 18px;
+            color: var(--text-dim);
+            line-height: 1.8;
+            margin-bottom: 25px;
+        }
+
+        .highlight-box {
+            background: rgba(0, 212, 255, 0.05);
+            border-left: 4px solid var(--accent);
+            padding: 25px 30px;
+            margin: 40px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .highlight-box h4 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--accent);
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+
+        .highlight-box p {
+            color: var(--text-dim);
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        .phase-card {
+            background: rgba(26, 31, 58, 0.4);
+            border: 1px solid rgba(0, 212, 255, 0.15);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            transition: all 0.3s var(--transition);
+        }
+
+        .phase-card:hover {
+            border-color: rgba(0, 212, 255, 0.4);
+            transform: translateX(5px);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.2);
+        }
+
+        .phase-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--copper);
+            margin-bottom: 20px;
+        }
+
+        .phase-content {
+            color: var(--text-dim);
+            line-height: 1.8;
+        }
+
+        .phase-content ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .phase-content li {
+            padding-left: 25px;
+            margin-bottom: 12px;
+            position: relative;
+        }
+
+        .phase-content li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .tech-item {
+            padding: 12px 24px;
+            background: rgba(200, 117, 51, 0.1);
+            border: 1px solid rgba(200, 117, 51, 0.3);
+            border-radius: 25px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--copper);
+        }
+
+        .software-table {
+            width: 100%;
+            margin: 40px 0;
+            border-collapse: separate;
+            border-spacing: 0;
+            overflow: hidden;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .software-table th {
+            background: rgba(0, 212, 255, 0.1);
+            color: var(--accent);
+            padding: 20px;
+            text-align: left;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .software-table td {
+            background: rgba(26, 31, 58, 0.4);
+            color: var(--text-dim);
+            padding: 18px 20px;
+            border-top: 1px solid rgba(0, 212, 255, 0.1);
+        }
+
+        .software-table tr:hover td {
+            background: rgba(26, 31, 58, 0.7);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 20px;
+            }
+
+            .project-title {
+                font-size: 42px;
+            }
+
+            .section-title {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Animation -->
+    <div class="page-loader">
+        <div class="loader-spinner"></div>
+    </div>
+    
+    <!-- Scroll Progress Bar -->
+    <div class="scroll-progress"></div>
+    <div class="background-grid"></div>
+    <div class="glow-orb glow-orb-1"></div>
+    <div class="glow-orb glow-orb-2"></div>
+
+    <header>
+        <div class="container">
+            <nav>
+                <a href="index.html" class="logo">MONTEE OLUWOLE</a>
+                <a href="index.html" class="back-link">
+                    <span>←</span>
+                    <span>BACK TO HOME</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="project-hero">
+            <div class="container">
+                <div class="project-number">PROJECT 03</div>
+                <h1 class="project-title">Multi-Sensor Demonstration Refinement for Robotic Grasping</h1>
+                <p class="project-intro">Recording imperfect human demonstrations via somatosensory glove, quantifying physical differences between successful and failed attempts through multi-sensor analysis, and applying trajectory refinement to achieve ≥25% success rate improvement over raw demonstration replay.</p>
+                
+                <div class="project-tags">
+                    <span class="tag">ROS Noetic</span>
+                    <span class="tag">Arduino UNO</span>
+                    <span class="tag">Learning from Demonstration</span>
+                    <span class="tag">Sensor Fusion</span>
+                    <span class="tag">Trajectory Refinement</span>
+                    <span class="tag">Python</span>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 40px;">
+                    <h4>Project Status</h4>
+                    <p><strong>Start Date:</strong> December 5th, 2025<br>
+                    <strong>Hardware Status:</strong> Received - uHand UNO Advanced with Somatosensory Glove</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="hardware-section">
+            <div class="container">
+                <h2 class="section-title" style="text-align: center; margin-bottom: 50px;">Hardware Platform</h2>
+                <div style="text-align: center; margin-bottom: 60px;">
+                    <img src="images/robotic_hand.jpg" alt="Robotic Hand Hardware" class="hardware-image" style="margin-bottom: 20px;">
+                    <p style="color: var(--text-dim); font-size: 14px; margin-top: 15px;">Assembled uHand UNO with labeled components</p>
+                </div>
+                <div style="text-align: center;">
+                    <img src="images/packing_list.jpg" alt="uHand UNO Advanced Packing List with Somatosensory Glove" class="hardware-image" style="margin-bottom: 20px;">
+                    <p style="color: var(--text-dim); font-size: 14px; margin-top: 15px;">Complete hardware package including somatosensory glove for teleoperation</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container">
+                <h2 class="section-title">Project Aim</h2>
+                <div class="highlight-box">
+                    <p>Record imperfect human demonstrations via somatosensory glove, quantify physical differences between successful and failed demonstrations by comparing sensor measurements (contact timing from touch sensors, trajectory smoothness from accelerometer, approach distance from ultrasonic, object visibility from camera), apply trajectory refinement through averaging and filtering to match successful demonstration characteristics, and validate ≥25% success rate improvement over raw demonstration replay.</p>
+                </div>
+
+                <h2 class="section-title" style="margin-top: 80px;">Implementation Plan</h2>
+                
+                <div class="phase-card">
+                    <h3 class="phase-title">Phase 1: System Integration & Characterization</h3>
+                    <div class="phase-content">
+                        <p><strong>Environment Setup:</strong></p>
+                        <ul>
+                            <li>Install Ubuntu 20.04 operating system either as dual boot or virtual machine</li>
+                            <li>Install ROS Noetic desktop-full package which includes core ROS libraries and visualization tools</li>
+                            <li>Install rosserial packages which enable Arduino to communicate with ROS over USB serial connection</li>
+                            <li>Install Arduino IDE version 1.8.19 for programming the Arduino UNO controller</li>
+                            <li>Add rosserial Arduino library through the Arduino IDE library manager to enable ROS message publishing from Arduino</li>
+                        </ul>
+                        <p style="margin-top: 20px;"><strong>Hardware Characterization:</strong></p>
+                        <ul>
+                            <li>Connect Arduino UNO to computer via USB cable and load the manufacturer's example code from kit documentation</li>
+                            <li>Use ROS command line tools to list all active topics and identify what sensors are publishing data</li>
+                            <li>Use ROS graphical tools to visualize the node and topic structure to understand system architecture</li>
+                            <li>Manually test each controllable joint to count total degrees of freedom and identify servo mappings</li>
+                            <li>Calibrate the somatosensory glove by recording minimum and maximum sensor readings when hand is fully closed and fully open</li>
+                            <li>Document all discovered joint names, sensor topic names, message types, and data ranges in a reference document</li>
+                        </ul>
+                        <p style="margin-top: 20px;"><strong>Deliverable:</strong> System characterization document listing all ROS topics with their message types and hardware capabilities.</p>
+                    </div>
+                </div>
+
+                <div class="phase-card">
+                    <h3 class="phase-title">Phase 2: Demonstration Collection</h3>
+                    <div class="phase-content">
+                        <p><strong>Recording Setup:</strong></p>
+                        <ul>
+                            <li>Create a ROS catkin workspace which organizes all custom code and launch files</li>
+                            <li>Launch the manufacturer's hand control node which interfaces between ROS and the Arduino hardware</li>
+                            <li>Open a second terminal and start rosbag recording which captures all ROS topics with synchronized timestamps</li>
+                        </ul>
+                        <p style="margin-top: 20px;"><strong>Demonstration Protocol:</strong></p>
+                        <ul>
+                            <li>Mark a consistent starting position for the table tennis ball at 15cm from the hand base for repeatability</li>
+                            <li>Wear the somatosensory glove and perform the pick-and-place task while rosbag records all sensor data</li>
+                            <li>Stop the recording after task completion and save with a unique filename</li>
+                            <li>Perform 5 careful slow demonstrations, 5 rushed sloppy demonstrations, and 5 with varied approach angles for dataset diversity</li>
+                            <li>Repeat until 15 total demonstrations are collected with each saved as a separate rosbag file</li>
+                        </ul>
+                        <p style="margin-top: 20px;"><strong>Labeling:</strong></p>
+                        <ul>
+                            <li>Use the rqt_bag graphical tool to play back each rosbag file and view camera frames frame-by-frame</li>
+                            <li>Extract the final frame from each demonstration to check if the ball is grasped in the hand</li>
+                            <li>Create a spreadsheet that lists each demonstration ID with a binary success or failure label based on visual inspection</li>
+                        </ul>
+                        <p style="margin-top: 20px;"><strong>Deliverable:</strong> 15 rosbag files (approximately 500MB each) and a CSV file containing success labels for each demonstration.</p>
+                    </div>
+                </div>
+
+                <div class="phase-card">
+                    <h3 class="phase-title">Phase 3: Baseline Testing</h3>
+                    <div class="phase-content">
+                        <p><strong>Trajectory Extraction:</strong></p>
+                        <ul>
+                            <li>Install the Python rosbag library which enables reading rosbag files programmatically</li>
+                            <li>Write a Python script that extracts the joint states topic from each rosbag into CSV format with timestamps and joint angles</li>
+                            <li>Randomly select 5 demonstrations that were labeled as successful to use for baseline testing</li>
+                        </ul>
+                        <p style="margin-top: 20px;"><strong>Playback Setup:</strong></p>
+                        <ul>
+                            <li>Create a Python ROS node that reads joint angle trajectories from CSV files and publishes them to the robot hand</li>
+                            <li>Configure the node to publish joint commands at the same rate and timing as the original demonstration</li>
+                            <li>Test the playback system by replaying one trajectory and verifying the hand moves as expected</li>
+                        </ul>
+                        <p style="margin-top: 20px;"><strong>Execution:</strong></p>
+                        <ul>
+                            <li>Launch the manufacturer's hand control node in one terminal to enable servo control</li>
+                            <li>Run the trajectory playback script in a second terminal providing it with a trajectory CSV file</li>
+                            <li>Manually observe whether the grasp succeeds and record the outcome in a spreadsheet</li>
+                            <li>Repeat this process for each of the 5 selected trajectories 3 times each, yielding 15 total baseline trials</li>
+                        </ul>
+                        <p style="margin-top: 20px;"><strong>Deliverable:</strong> CSV file containing 15 baseline trial results with success or failure labels for each replay.</p>
+                    </div>
+                </div>
+
+                <div class="phase-card">
+                    <h3 class="phase-title">Phase 4: Multi-Sensor Analysis</h3>
+                    <div class="phase-content">
+                        <p><strong>Data Processing:</strong></p>
+                        <ul>
+                            <li>Install Python scientific computing libraries including pandas for data manipulation, numpy for numerical operations, scipy for signal processing, matplotlib for plotting, and opencv for image processing</li>
+                            <li>Write a Python script that iterates through all rosbag files and extracts sensor data from all topics into a unified CSV dataset</li>
+                            <li>Use ROS command line tools to export specific topics from rosbags directly to CSV format for easier analysis</li>
+                        </ul>
+                        <p style="margin-top: 20px;"><strong>Statistical Comparison to Identify Success Patterns:</strong></p>
+                        <ul>
+                            <li>Install and launch Jupyter Notebook which provides an interactive environment for data analysis and visualization</li>
+                            <li>Load all demonstration data into pandas dataframes and separate into two groups based on success or failure labels</li>
+                            <li>Extract quantitative features from touch sensor data by identifying the timestamp when contact state changes from zero to one for each demonstration</li>
+                            <li>Calculate trajectory smoothness from accelerometer data by computing the root-mean-square of acceleration magnitude across the entire demonstration duration</li>
+                            <li>Extract approach distance from ultrasonic sensor by recording the distance measurement at the moment when fingers begin closing</li>
+                            <li>Count the number of camera frames where object contours are detected to measure object visibility during approach</li>
+                            <li>Compute mean and standard deviation for each feature separately for the successful group and the failed group</li>
+                            <li>Identify discriminative features by finding measurements where the difference between group means exceeds two standard deviations</li>
+                            <li>Create comparison plots showing histograms or box plots of each feature split by success versus failure to visualize the differences</li>
+                            <li>Document the quantified patterns such as "successful grasps have contact timing between 1.8-2.4 seconds" or "successful trajectories have acceleration RMS below 1.0 m/s²"</li>
+                        </ul>
+                        <p style="margin-top: 20px;"><strong>Deliverable:</strong> Jupyter notebook containing statistical analysis with quantified differences between successful and failed demonstrations across all sensor modalities.</p>
+                    </div>
+                </div>
+
+                <div class="phase-card">
+                    <h3 class="phase-title">Phase 5: Trajectory Refinement</h3>
+                    <div class="phase-content">
+                        <p><strong>Trajectory Processing:</strong></p>
+                        <ul>
+                            <li>Create a Python script that implements the trajectory refinement pipeline using the success patterns identified in the statistical analysis</li>
+                        </ul>
+                        <p style="margin-top: 20px;"><strong>Averaging Stage:</strong></p>
+                        <ul>
+                            <li>Use scipy interpolation functions to resample all successful demonstration trajectories to a common length of 101 time points ensuring temporal alignment</li>
+                            <li>Compute the element-wise mean across all successful trajectories to create an averaged trajectory that reduces random variance</li>
+                        </ul>
+                        <p style="margin-top: 20px;"><strong>Filtering Stage:</strong></p>
+                        <ul>
+                            <li>Design a 4th-order Butterworth low-pass filter with 2Hz cutoff frequency selected based on the acceleration RMS threshold identified in the success pattern analysis</li>
+                            <li>Apply the filter to the averaged trajectory using zero-phase filtering to remove high-frequency tremor components without introducing time delays</li>
+                            <li>Verify that the filtered trajectory's acceleration RMS falls within the successful demonstration range identified during analysis</li>
+                        </ul>
+                        <p style="margin-top: 20px;"><strong>Timing Adjustment:</strong></p>
+                        <ul>
+                            <li>If touch sensor analysis revealed a narrow timing window for successful contact, apply time-warping to the trajectory so the finger closure phase aligns with the mean successful contact timestamp</li>
+                        </ul>
+                        <p style="margin-top: 20px;"><strong>Pre-execution Validation:</strong></p>
+                        <ul>
+                            <li>Extend the trajectory playback node to check sensor conditions against the success patterns before executing the grasp motion</li>
+                            <li>Implement an ultrasonic range check that verifies the object distance falls within the successful range (e.g., 10-15cm)</li>
+                            <li>Implement a camera-based object detection check using OpenCV contour detection that confirms an object blob is present</li>
+                            <li>Configure the system to refuse execution and display an error message if pre-execution checks indicate conditions do not match successful demonstration patterns</li>
+                        </ul>
+                        <p style="margin-top: 20px;"><strong>Deliverable:</strong> Refined trajectory CSV file compatible with the playback node.</p>
+                    </div>
+                </div>
+
+                <div class="phase-card">
+                    <h3 class="phase-title">Phase 6: Validation & Results</h3>
+                    <div class="phase-content">
+                        <p><strong>Execution:</strong></p>
+                        <ul>
+                            <li>Use the same experimental setup as the baseline testing phase to ensure fair comparison</li>
+                            <li>Run the trajectory playback script with the refined trajectory file and execute 15 repetitions of the grasp task</li>
+                            <li>Record the outcome of each trial in a spreadsheet with the same format as baseline results</li>
+                        </ul>
+                        <p style="margin-top: 20px;"><strong>Statistical Analysis:</strong></p>
+                        <ul>
+                            <li>Write a Python script that loads both baseline and refined results CSV files using pandas</li>
+                            <li>Calculate the success rate for baseline trials by computing the mean of the binary success column</li>
+                            <li>Calculate the success rate for refined trials using the same method</li>
+                            <li>Compute the percentage improvement by taking the difference in success rates divided by baseline success rate</li>
+                            <li>Print a summary showing baseline success rate, refined success rate, and percentage improvement</li>
+                        </ul>
+                        <p style="margin-top: 20px;"><strong>Visualization:</strong></p>
+                        <ul>
+                            <li>Use matplotlib to create a bar chart comparing baseline versus refined success rates side-by-side</li>
+                            <li>Label axes appropriately and save the figure as a high-resolution PNG image for reporting</li>
+                        </ul>
+                        <p style="margin-top: 20px;"><strong>Video Documentation:</strong></p>
+                        <ul>
+                            <li>Use screen recording software or ffmpeg to capture video during trajectory execution</li>
+                            <li>Create a split-screen video showing a raw demonstration replay on one side and the refined execution on the other side</li>
+                            <li>Add text overlays indicating which is baseline and which is refined for clarity</li>
+                        </ul>
+                        <p style="margin-top: 20px;"><strong>Deliverable:</strong> Results bar chart image, demonstration comparison video, and project summary document.</p>
+                    </div>
+                </div>
+
+                <h2 class="section-title" style="margin-top: 80px;">Required Software Stack</h2>
+                
+                <table class="software-table">
+                    <thead>
+                        <tr>
+                            <th>Component</th>
+                            <th>Tool</th>
+                            <th>Installation Method</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Operating System</td>
+                            <td>Ubuntu 20.04 LTS</td>
+                            <td>Fresh installation or virtual machine</td>
+                        </tr>
+                        <tr>
+                            <td>Robotics Framework</td>
+                            <td>ROS Noetic</td>
+                            <td>Install via apt package manager</td>
+                        </tr>
+                        <tr>
+                            <td>Microcontroller IDE</td>
+                            <td>Arduino IDE 1.8.19</td>
+                            <td>Download from official Arduino website</td>
+                        </tr>
+                        <tr>
+                            <td>Programming Language</td>
+                            <td>Python 3.8 or higher</td>
+                            <td>Pre-installed with Ubuntu</td>
+                        </tr>
+                        <tr>
+                            <td>Data Analysis</td>
+                            <td>pandas, numpy, scipy</td>
+                            <td>Install via pip package manager</td>
+                        </tr>
+                        <tr>
+                            <td>Visualization</td>
+                            <td>matplotlib, opencv-python</td>
+                            <td>Install via pip package manager</td>
+                        </tr>
+                        <tr>
+                            <td>Interactive Analysis</td>
+                            <td>Jupyter Notebook</td>
+                            <td>Install via pip package manager</td>
+                        </tr>
+                        <tr>
+                            <td>ROS Tools</td>
+                            <td>RViz, rqt_bag, rosserial</td>
+                            <td>Included with ROS desktop-full installation</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h2 class="section-title" style="margin-top: 80px;">Key Features</h2>
+                
+                <div class="highlight-box">
+                    <h4>Multi-Sensor Integration</h4>
+                    <p>Combines touch sensors for contact timing, accelerometer for trajectory smoothness, ultrasonic for approach distance, and camera for object visibility to create a comprehensive understanding of successful grasping patterns.</p>
+                </div>
+
+                <div class="highlight-box">
+                    <h4>Learning from Demonstration</h4>
+                    <p>Records human demonstrations through somatosensory glove teleoperation, analyzes the physical differences between successful and failed attempts, and automatically refines trajectories to match successful characteristics.</p>
+                </div>
+
+                <div class="highlight-box">
+                    <h4>Statistical Pattern Recognition</h4>
+                    <p>Uses rigorous statistical analysis to identify discriminative features that separate successful from failed grasps, quantifying patterns such as optimal contact timing windows and trajectory smoothness thresholds.</p>
+                </div>
+
+                <div class="highlight-box">
+                    <h4>Trajectory Refinement Pipeline</h4>
+                    <p>Implements a systematic refinement approach combining averaging across successful demonstrations, low-pass filtering to remove tremor, and time-warping to align critical contact events with optimal timing windows.</p>
+                </div>
+
+                <h2 class="section-title" style="margin-top: 80px;">Expected Outcomes</h2>
+                <p class="section-text">The project aims to achieve a minimum 25% improvement in grasp success rate compared to raw demonstration replay. This improvement validates the hypothesis that multi-sensor analysis can identify physical characteristics of successful grasping and that trajectory refinement techniques can systematically enhance demonstration quality. The methodology provides a framework for improving robot performance through data-driven analysis of human demonstrations across multiple sensor modalities.</p>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+    <script>
+        // Page loader
+        window.addEventListener("load", function() {
+            const loader = document.querySelector(".page-loader");
+            setTimeout(() => {
+                loader.classList.add("hidden");
+            }, 500);
+        });
+
+        // Scroll progress indicator
+        window.addEventListener("scroll", function() {
+            const scrollProgress = document.querySelector(".scroll-progress");
+            const windowHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (window.scrollY / windowHeight) * 100;
+            scrollProgress.style.width = scrolled + "%";
+        });
+
+        // Scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: "0px 0px -100px 0px"
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add("visible");
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll(".scroll-fade").forEach(el => observer.observe(el));
+    </script>
+</body>
+</html>

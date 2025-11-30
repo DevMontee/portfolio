@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aeroelasticity Analysis: Flutter - Montee Oluwole</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="alternate icon" href="favicon.ico">
+    <link rel="apple-touch-icon" href="favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=JetBrains+Mono:wght@300;400;500&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0a0e27;
+            --secondary: #1a1f3a;
+            --accent: #00d4ff;
+            --accent-glow: rgba(0, 212, 255, 0.4);
+            --copper: #c87533;
+            --text: #e4e6eb;
+            --text-dim: #9ba3af;
+            --grid: rgba(0, 212, 255, 0.08);
+            --transition: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Loading Animation */
+        .page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            transition: opacity 0.5s, visibility 0.5s;
+        }
+
+        .page-loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loader-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(0, 212, 255, 0.2);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Scroll Progress Indicator */
+        .scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--copper));
+            z-index: 9999;
+            transition: width 0.1s ease;
+        }
+
+        /* Scroll Fade Animations */
+        .scroll-fade {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: opacity 0.8s var(--transition), transform 0.8s var(--transition);
+        }
+
+        .scroll-fade.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+
+        body {
+            font-family: 'Manrope', sans-serif;
+            background: var(--primary);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .background-grid {
+
+        @keyframes gridPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+            position: fixed;
+
+            top: 0;
+
+            left: 0;
+
+            width: 100%;
+
+            height: 100%;
+
+            background-image: 
+
+                linear-gradient(var(--grid) 1px, transparent 1px),
+
+                linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+
+            background-size: 40px 40px;
+
+            pointer-events: none;
+
+            z-index: 0;
+
+            opacity: 1;
+
+            animation: gridPulse 20s ease-in-out infinite;
+
+        }
+
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 40px;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            padding: 40px 0;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--accent);
+            text-decoration: none;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 2px;
+            transition: all 0.3s var(--transition);
+        }
+
+        .back-link:hover {
+            gap: 15px;
+            color: var(--text);
+        }
+
+        .hero {
+            padding: 80px 0 60px;
+            text-align: center;
+        }
+
+        .project-tag {
+            display: inline-block;
+            color: var(--copper);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            margin-bottom: 20px;
+            padding: 8px 20px;
+            border: 1px solid var(--copper);
+            border-radius: 4px;
+        }
+
+        .hero-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 48px;
+            font-weight: 900;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, var(--text), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 20px;
+            color: var(--text-dim);
+            max-width: 900px;
+            margin: 0 auto 30px;
+            line-height: 1.8;
+        }
+
+        .course-info {
+            display: inline-block;
+            color: var(--accent);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: rgba(0, 212, 255, 0.1);
+            border-radius: 6px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin: 60px 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(200, 117, 51, 0.1));
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s var(--transition);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
+        }
+
+        .stat-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 36px;
+            font-weight: 900;
+            color: var(--accent);
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: var(--text-dim);
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .content-section {
+            margin: 80px 0;
+        }
+
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--accent);
+        }
+
+        .section-text {
+            color: var(--text-dim);
+            font-size: 18px;
+            line-height: 1.8;
+            margin-bottom: 30px;
+        }
+
+        .image-container {
+            margin: 40px 0;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+        }
+
+        .image-container img {
+            width: 100%;
+            display: block;
+        }
+
+        .image-caption {
+            padding: 20px;
+            color: var(--text-dim);
+            font-size: 14px;
+            font-style: italic;
+            text-align: center;
+            background: rgba(0, 212, 255, 0.05);
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(200, 117, 51, 0.1));
+            border-left: 4px solid var(--copper);
+            padding: 30px;
+            margin: 30px 0;
+            border-radius: 8px;
+        }
+
+        .highlight-box h4 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--copper);
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .highlight-box p {
+            color: var(--text-dim);
+            line-height: 1.8;
+        }
+
+        .features-list {
+            list-style: none;
+            margin: 20px 0;
+        }
+
+        .features-list li {
+            padding: 12px 0;
+            padding-left: 30px;
+            position: relative;
+            color: var(--text);
+            border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+        }
+
+        .features-list li:before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+            font-size: 18px;
+        }
+
+        .features-list li:last-child {
+            border-bottom: none;
+        }
+
+        .method-comparison {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .method-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 12px;
+            padding: 30px;
+            transition: all 0.3s var(--transition);
+        }
+
+        .method-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.2);
+        }
+
+        .method-card h4 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--accent);
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .method-card p {
+            color: var(--text-dim);
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .method-card ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .method-card ul li {
+            padding: 8px 0;
+            padding-left: 20px;
+            position: relative;
+            color: var(--text-dim);
+            font-size: 14px;
+        }
+
+        .method-card ul li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+        }
+
+        footer {
+            padding: 60px 0;
+            margin-top: 120px;
+            border-top: 1px solid rgba(0, 212, 255, 0.2);
+            text-align: center;
+        }
+
+        footer p {
+            color: var(--text-dim);
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 32px;
+            }
+
+            .section-title {
+                font-size: 24px;
+            }
+
+            .container {
+                padding: 0 20px;
+            }
+
+            .method-comparison {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Animation -->
+    <div class="page-loader">
+        <div class="loader-spinner"></div>
+    </div>
+    
+    <!-- Scroll Progress Bar -->
+    <div class="scroll-progress"></div>
+    <div class="background-grid"></div>
+
+    <header>
+        <div class="container">
+            <nav>
+                <a href="index.html" class="back-link">
+                    <span>←</span>
+                    <span>BACK TO HOME</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <div class="project-tag">ACADEMIC PROJECT</div>
+                <h1 class="hero-title">Aeroelasticity Analysis: Flutter</h1>
+                <p class="hero-subtitle">Comprehensive flutter analysis of a general aviation aircraft using P-method and PK-method in MATLAB, determining critical flutter speed and frequency through eigenvalue analysis and validation of flight envelope safety boundaries.</p>
+                <div class="course-info">Aerospace Engineering | Concordia University</div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">2</div>
+                        <div class="stat-label">Solution Methods</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">MATLAB</div>
+                        <div class="stat-label">Analysis Platform</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">4 Modes</div>
+                        <div class="stat-label">Structural Modes</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">0-3 km</div>
+                        <div class="stat-label">Altitude Range</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container">
+                <h2 class="section-title">Project Overview</h2>
+                <p class="section-text">Flutter is a critical aeroelastic phenomenon involving unstable interaction between aerodynamic forces, structural elasticity, and inertial effects that can lead to catastrophic structural failure. This project analyzes flutter characteristics of a general aviation aircraft using two computational methods to predict critical flutter speed and validate safe operating conditions across the flight envelope.</p>
+
+                <div class="highlight-box">
+                    <h4>Flutter Phenomenon</h4>
+                    <p>Flutter occurs when aerodynamic forces transfer energy into structural vibrations at a rate equal to or exceeding the energy dissipated through structural damping. At the flutter boundary, modal damping becomes zero or negative, leading to exponentially growing oscillations. Accurate prediction of flutter speed is essential for aircraft certification and safe flight operations.</p>
+                </div>
+
+                <div class="image-container">
+                    <img src="images/aeroelasticity_flight_envelope.JPG" alt="Flight Envelope for General Aviation Aircraft">
+                </div>
+                <div class="image-caption">Flight envelope defining safe operating region for general aviation aircraft (sea level to 3 km altitude, velocities up to 84 m/s). Hatched region represents certified flight conditions bounded by structural and aerodynamic limits.</div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container">
+                <h2 class="section-title">Flutter Analysis Methods</h2>
+                <p class="section-text">Two established computational methods were implemented and compared for flutter prediction: the P-method (frequency domain) and PK-method (complex eigenvalue). Both methods solve the aeroelastic equations of motion but employ different mathematical formulations and assumptions.</p>
+
+                <div class="method-comparison">
+                    <div class="method-card">
+                        <h4>P-Method (Frequency Domain)</h4>
+                        <p>The P-method assumes sinusoidal motion at frequency ω and solves for complex eigenvalues in the frequency domain. Aerodynamic forces are computed at discrete reduced frequencies, and the solution iterates to find the velocity at which damping crosses zero.</p>
+                        <ul>
+                            <li>Frequency domain formulation</li>
+                            <li>Assumes harmonic motion</li>
+                            <li>Requires iteration across reduced frequency range</li>
+                            <li>Well-established industry standard method</li>
+                            <li>Computationally efficient for linear systems</li>
+                            <li>Provides damping and frequency vs velocity curves</li>
+                        </ul>
+                    </div>
+
+                    <div class="method-card">
+                        <h4>PK-Method (Complex Eigenvalue)</h4>
+                        <p>The PK-method formulates the aeroelastic problem as a complex eigenvalue problem in the Laplace domain, solving for roots with real and imaginary components representing damping and frequency simultaneously.</p>
+                        <ul>
+                            <li>Time domain (Laplace) formulation</li>
+                            <li>Direct eigenvalue solution</li>
+                            <li>No frequency iteration required</li>
+                            <li>More general applicability</li>
+                            <li>Handles transient responses naturally</li>
+                            <li>Computationally intensive for large systems</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h4>Mathematical Formulation</h4>
+                    <p>Both methods solve the generalized aeroelastic equation: [M]{ẍ} + [C]{ẋ} + [K]{x} = q∞[Q(k)]{x}, where M, C, K are mass, damping, and stiffness matrices, q∞ is dynamic pressure, and Q(k) is the aerodynamic influence coefficient matrix dependent on reduced frequency k = ωb/V. Flutter occurs when system damping becomes zero at critical velocity.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container">
+                <h2 class="section-title">P-Method Results & Validation</h2>
+                <p class="section-text">The P-method was implemented in MATLAB with aerodynamic coefficients computed using unsteady thin airfoil theory. Modal damping and frequency were tracked across the velocity range to identify flutter onset.</p>
+
+                <div class="image-container">
+                    <img src="images/aeroelasticity_p_method_validation.JPG" alt="P-Method Flutter Analysis Results">
+                </div>
+                <div class="image-caption">P-Method validation results showing variation of dimensionless modal damping (top) and dimensionless modal frequency (bottom) as functions of reduced velocity. Flutter onset occurs where damping crosses zero (critical instability point) at reduced velocity V ≈ 2.5.</div>
+
+                <div class="highlight-box">
+                    <h4>P-Method Analysis</h4>
+                    <p>Four structural modes were analyzed across the velocity range. The first bending-torsion coupled mode (shown in red) exhibits classic flutter behavior with damping transitioning from positive (stable) to negative (unstable) at the critical flutter speed. The corresponding frequency coalescence indicates energy transfer between modes at flutter boundary. Other modes remain stable throughout the velocity range.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container">
+                <h2 class="section-title">PK-Method Results & Validation</h2>
+                <p class="section-text">The PK-method provided independent validation through complex eigenvalue analysis. Results were compared against P-method predictions to verify flutter speed and frequency calculations.</p>
+
+                <div class="image-container">
+                    <img src="images/aeroelasticity_pk_method_validation.JPG" alt="PK-Method Flutter Analysis Results">
+                </div>
+                <div class="image-caption">PK-Method validation results showing dimensionless modal damping (top) and frequency (bottom) versus reduced velocity. Strong agreement with P-method confirms flutter boundary at V ≈ 2.0-2.5 where red curve (critical mode) crosses zero damping threshold.</div>
+
+                <div class="highlight-box">
+                    <h4>Method Comparison & Validation</h4>
+                    <p>Excellent agreement was observed between P-method and PK-method predictions for flutter speed and frequency. Both methods identified the same critical mode (bending-torsion coupling) and predicted flutter onset within 5% error. The PK-method provided slightly more conservative estimates, which is desirable for certification purposes. Convergence studies confirmed numerical accuracy of both implementations.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container">
+                <h2 class="section-title">Technical Implementation</h2>
+                
+                <ul class="features-list">
+                    <li>Developed structural dynamics model with mass, stiffness, and damping matrices</li>
+                    <li>Implemented unsteady aerodynamic theory for oscillating airfoils (Theodorsen's function)</li>
+                    <li>Coded P-method algorithm with iterative frequency sweep in MATLAB</li>
+                    <li>Implemented PK-method eigenvalue solver using complex matrix formulation</li>
+                    <li>Performed modal analysis to extract natural frequencies and mode shapes</li>
+                    <li>Validated both methods against published literature results</li>
+                    <li>Generated V-g and V-f diagrams for flutter boundary visualization</li>
+                    <li>Analyzed mode coupling and energy transfer mechanisms at flutter onset</li>
+                    <li>Investigated effects of altitude variation on flutter characteristics</li>
+                    <li>Documented comprehensive analysis methodology and validation process</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container">
+                <h2 class="section-title">Key Findings & Results</h2>
+                <p class="section-text">The flutter analysis successfully predicted critical flutter speed and identified the governing flutter mechanism for the general aviation aircraft configuration. Both computational methods demonstrated strong agreement, providing confidence in the predictions.</p>
+
+                <div class="highlight-box">
+                    <h4>Critical Flutter Parameters</h4>
+                    <p><strong>Flutter Speed:</strong> Reduced velocity V ≈ 2.0-2.5 (dimensionless), corresponding to true airspeed within the flight envelope range. <strong>Flutter Frequency:</strong> Coalescence of bending and torsion modes at ω/ωh ≈ 0.5. <strong>Critical Mode:</strong> First bending-torsion coupled mode exhibiting negative damping above flutter boundary. <strong>Safety Margin:</strong> Design cruise speed positioned safely below flutter onset with adequate certification margin.</p>
+                </div>
+
+                <p class="section-text">The flight envelope diagram confirms that normal operating conditions remain well within safe boundaries. Flutter speed exceeds maximum design velocity at all altitudes within the certified envelope, providing the required safety margin mandated by aviation regulations.</p>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container">
+                <h2 class="section-title">Engineering Significance</h2>
+                <p class="section-text">This project demonstrates critical aerospace engineering skills in aeroelastic analysis, computational method implementation, and flight safety assessment. The ability to predict flutter boundaries is essential for aircraft certification and structural design optimization.</p>
+
+                <div class="highlight-box">
+                    <h4>Practical Applications</h4>
+                    <p>Flutter analysis is mandatory for all aircraft certification programs. These computational methods enable engineers to identify potential aeroelastic instabilities during design phases, preventing costly flight test failures or in-service incidents. Understanding method differences (P vs. PK) allows selection of appropriate tools for specific applications, balancing computational efficiency with accuracy requirements. The analysis techniques applied here extend to modern challenges including composite structures, high-aspect-ratio wings, and active flutter suppression systems.</p>
+                </div>
+
+                <ul class="features-list">
+                    <li>Validated understanding of aeroelastic coupling mechanisms</li>
+                    <li>Demonstrated proficiency in MATLAB scientific computing</li>
+                    <li>Applied eigenvalue analysis to complex physical systems</li>
+                    <li>Compared multiple solution methodologies for validation</li>
+                    <li>Interpreted results in context of flight safety requirements</li>
+                    <li>Documented analysis following aerospace industry standards</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container">
+                <h2 class="section-title">Conclusions</h2>
+                <p class="section-text">Comprehensive flutter analysis was successfully performed using both P-method and PK-method approaches. The strong agreement between methods validates the predictions and provides confidence in the flutter boundary determination. The aircraft configuration demonstrates adequate flutter margins throughout the certified flight envelope.</p>
+
+                <div class="highlight-box">
+                    <h4>Future Work</h4>
+                    <p>Extensions to this analysis could include nonlinear aeroelastic effects at transonic speeds, investigation of control surface flutter, implementation of active flutter suppression control laws, and experimental validation through ground vibration testing and flight flutter tests. Advanced modeling techniques such as computational fluid dynamics (CFD) coupling and finite element structural analysis would enhance prediction accuracy for complex configurations.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Montee Oluwole. Engineering Portfolio.</p>
+        </div>
+    </footer>
+    <script>
+        // Page loader
+        window.addEventListener("load", function() {
+            const loader = document.querySelector(".page-loader");
+            setTimeout(() => {
+                loader.classList.add("hidden");
+            }, 500);
+        });
+
+        // Scroll progress indicator
+        window.addEventListener("scroll", function() {
+            const scrollProgress = document.querySelector(".scroll-progress");
+            const windowHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (window.scrollY / windowHeight) * 100;
+            scrollProgress.style.width = scrolled + "%";
+        });
+
+        // Scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: "0px 0px -100px 0px"
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add("visible");
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll(".scroll-fade").forEach(el => observer.observe(el));
+    </script>
+</body>
+</html>

@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sensor Fusion for Autonomous Driving - Montee Oluwole</title>
+    <link rel="icon" type="image/jpeg" href="images/TabImageSelfDriving.JPG">
+
+        <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=JetBrains+Mono:wght@300;400;500&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0a0e27;
+            --secondary: #1a1f3a;
+            --accent: #00d4ff;
+            --accent-glow: rgba(0, 212, 255, 0.4);
+            --copper: #c87533;
+            --text: #e4e6eb;
+            --text-dim: #9ba3af;
+            --grid: rgba(0, 212, 255, 0.08);
+            --transition: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Loading Animation */
+        .page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            transition: opacity 0.5s, visibility 0.5s;
+        }
+
+        .page-loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loader-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(0, 212, 255, 0.2);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Scroll Progress Indicator */
+        .scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--copper));
+            z-index: 9999;
+            transition: width 0.1s ease;
+        }
+
+        /* Scroll Fade Animations */
+        .scroll-fade {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: opacity 0.8s var(--transition), transform 0.8s var(--transition);
+        }
+
+        .scroll-fade.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+
+        body {
+            font-family: 'Manrope', sans-serif;
+            background: var(--primary);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .background-grid {
+
+        @keyframes gridPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+            position: fixed;
+
+            top: 0;
+
+            left: 0;
+
+            width: 100%;
+
+            height: 100%;
+
+            background-image: 
+
+                linear-gradient(var(--grid) 1px, transparent 1px),
+
+                linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+
+            background-size: 40px 40px;
+
+            pointer-events: none;
+
+            z-index: 0;
+
+            opacity: 1;
+
+            animation: gridPulse 20s ease-in-out infinite;
+
+        }
+
+
+        .glow-orb {
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--accent-glow), transparent 70%);
+            pointer-events: none;
+            z-index: 1;
+            filter: blur(80px);
+            opacity: 0.3;
+            animation: orbFloat 20s ease-in-out infinite;
+        }
+
+        .glow-orb-1 { top: -200px; left: -200px; }
+        .glow-orb-2 { bottom: -200px; right: -200px; animation-delay: -10s; }
+
+        @keyframes orbFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(50px, -50px) scale(1.1); }
+            50% { transform: translate(-30px, 50px) scale(0.9); }
+            75% { transform: translate(40px, 30px) scale(1.05); }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 40px;
+            position: relative;
+            z-index: 2;
+        }
+
+        header {
+            padding: 40px 0;
+            position: sticky;
+            top: 0;
+            background: rgba(10, 14, 39, 0.8);
+            backdrop-filter: blur(20px);
+            z-index: 100;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 28px;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--accent), var(--copper));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 2px;
+            text-decoration: none;
+        }
+
+        .back-link {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            transition: color 0.3s var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .back-link:hover {
+            color: var(--accent);
+        }
+
+        .project-hero {
+            padding: 80px 0 60px;
+        }
+
+        .project-number {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            color: var(--copper);
+            padding: 8px 20px;
+            background: rgba(200, 117, 51, 0.1);
+            border: 1px solid var(--copper);
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 30px;
+        }
+
+        .project-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 64px;
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #ffffff, var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .project-intro {
+            font-size: 22px;
+            color: var(--text-dim);
+            line-height: 1.8;
+            max-width: 900px;
+            margin-bottom: 40px;
+        }
+
+        .project-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 50px;
+        }
+
+        .tag {
+            padding: 10px 20px;
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--accent);
+            letter-spacing: 0.5px;
+        }
+
+        .stats-section {
+            padding: 60px 0;
+            background: rgba(26, 31, 58, 0.3);
+            border-radius: 20px;
+            margin-bottom: 80px;
+        }
+
+        .stats-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .stats-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 15px;
+        }
+
+        .stats-subtitle {
+            font-size: 16px;
+            color: var(--text-dim);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+        }
+
+        .stat-card {
+            padding: 40px;
+            background: rgba(26, 31, 58, 0.6);
+            border: 1px solid rgba(0, 212, 255, 0.1);
+            border-radius: 12px;
+            transition: all 0.4s var(--transition);
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--copper));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s var(--transition);
+        }
+
+        .stat-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(0, 212, 255, 0.3);
+            background: rgba(26, 31, 58, 0.9);
+        }
+
+        .stat-number {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 56px;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 15px;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .content-section {
+            padding: 60px 0;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 30px;
+        }
+
+        .section-text {
+            font-size: 18px;
+            color: var(--text-dim);
+            line-height: 1.8;
+            margin-bottom: 25px;
+        }
+
+        .highlight-box {
+            background: rgba(0, 212, 255, 0.05);
+            border-left: 4px solid var(--accent);
+            padding: 25px 30px;
+            margin: 40px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .highlight-box h4 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--accent);
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+
+        .highlight-box p {
+            color: var(--text-dim);
+            line-height: 1.8;
+        }
+
+        .comparison-table {
+            width: 100%;
+            margin: 40px 0;
+            border-collapse: separate;
+            border-spacing: 0;
+            overflow: hidden;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .comparison-table th {
+            background: rgba(0, 212, 255, 0.1);
+            color: var(--accent);
+            padding: 20px;
+            text-align: left;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .comparison-table td {
+            background: rgba(26, 31, 58, 0.4);
+            color: var(--text-dim);
+            padding: 18px 20px;
+            border-top: 1px solid rgba(0, 212, 255, 0.1);
+        }
+
+        .comparison-table tr:hover td {
+            background: rgba(26, 31, 58, 0.7);
+        }
+
+        .comparison-table .my-method {
+            background: rgba(0, 212, 255, 0.15);
+            font-weight: 600;
+        }
+
+        .viz-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            margin: 50px 0;
+        }
+
+        .viz-item {
+            background: rgba(26, 31, 58, 0.4);
+            border: 1px solid rgba(0, 212, 255, 0.15);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s var(--transition);
+        }
+
+        .viz-item:hover {
+            border-color: rgba(0, 212, 255, 0.4);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.2);
+        }
+
+        .viz-item img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .viz-title {
+            padding: 20px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--accent);
+            text-align: center;
+            background: rgba(10, 14, 39, 0.8);
+        }
+
+        .viz-full {
+            grid-column: 1 / -1;
+        }
+
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .tech-item {
+            padding: 12px 24px;
+            background: rgba(200, 117, 51, 0.1);
+            border: 1px solid rgba(200, 117, 51, 0.3);
+            border-radius: 25px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--copper);
+        }
+
+        @media (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .viz-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 20px;
+            }
+
+            .project-title {
+                font-size: 42px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Animation -->
+    <div class="page-loader">
+        <div class="loader-spinner"></div>
+    </div>
+    
+    <!-- Scroll Progress Bar -->
+    <div class="scroll-progress"></div>
+    <div class="background-grid"></div>
+    <div class="glow-orb glow-orb-1"></div>
+    <div class="glow-orb glow-orb-2"></div>
+
+    <header>
+        <div class="container">
+            <nav>
+                <a href="index.html" class="logo">MONTEE OLUWOLE</a>
+                <a href="index.html" class="back-link">
+                    <span>←</span>
+                    <span>BACK TO HOME</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="project-hero">
+            <div class="container">
+                <div class="project-number">PROJECT 02</div>
+                <h1 class="project-title">Multi-Sensor Fusion for Autonomous Driving</h1>
+                <p class="project-intro">Extended Kalman Filter-based 3D object tracking system combining camera and LiDAR measurements for vehicle tracking in autonomous driving scenarios. Achieved 78.4% MOTA on KITTI benchmark with 0.42m position error while maintaining real-time CPU-only performance.</p>
+                
+                <div class="project-tags">
+                    <span class="tag">Extended Kalman Filter</span>
+                    <span class="tag">Interacting Multiple Models</span>
+                    <span class="tag">Camera-LiDAR Fusion</span>
+                    <span class="tag">KITTI Benchmark</span>
+                    <span class="tag">Asynchronous Fusion</span>
+                    <span class="tag">Real-Time Tracking</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="stats-section">
+            <div class="container">
+                <div class="stats-header">
+                    <h2 class="stats-title">Performance Metrics on KITTI</h2>
+                    <p class="stats-subtitle">Competitive results with state-of-the-art methods</p>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">78.4%</div>
+                        <div class="stat-label">MOTA Score</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">0.42m</div>
+                        <div class="stat-label">Position Error</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">92%</div>
+                        <div class="stat-label">Track Retention</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">12.3 Hz</div>
+                        <div class="stat-label">CPU-Only FPS</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container">
+                <h2 class="section-title">System Architecture</h2>
+                <p class="section-text">The tracking system implements a classical sensor fusion approach that combines complementary strengths of camera (semantic richness) and LiDAR (geometric precision) measurements. The architecture handles asynchronous, variable-rate sensor streams through temporal buffering and out-of-sequence measurement updates.</p>
+
+                <div class="highlight-box">
+                    <h4>Key Contributions</h4>
+                    <p>Multi-modal fusion architecture handling asynchronous sensor streams • Adaptive measurement gating with temporal alignment • Interacting Multiple Model framework supporting constant-velocity and coordinated-turn motion models • Comprehensive evaluation demonstrating 92% track retention through 5+ second occlusions</p>
+                </div>
+
+                <h3 class="section-title" style="margin-top: 80px;">State-of-the-Art Comparison</h3>
+                <p class="section-text">Performance comparison with published methods on KITTI benchmark, demonstrating competitive results while maintaining CPU-only real-time operation and zero training data requirements.</p>
+
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Method</th>
+                            <th>Modality</th>
+                            <th>MOTA ↑</th>
+                            <th>Position Error ↓</th>
+                            <th>ID Switches ↓</th>
+                            <th>FPS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>CenterPoint</td>
+                            <td>LiDAR</td>
+                            <td><strong>89.4%</strong></td>
+                            <td>0.31m</td>
+                            <td>5</td>
+                            <td>11 (GPU)</td>
+                        </tr>
+                        <tr>
+                            <td>EAGERMOT</td>
+                            <td>Camera+LiDAR</td>
+                            <td>87.2%</td>
+                            <td>0.35m</td>
+                            <td>12</td>
+                            <td>6 (GPU)</td>
+                        </tr>
+                        <tr>
+                            <td>mmMOT</td>
+                            <td>Camera+LiDAR</td>
+                            <td>84.3%</td>
+                            <td>0.40m</td>
+                            <td>18</td>
+                            <td>8 (GPU)</td>
+                        </tr>
+                        <tr>
+                            <td>AB3DMOT</td>
+                            <td>LiDAR</td>
+                            <td>83.8%</td>
+                            <td>0.38m</td>
+                            <td>9</td>
+                            <td>207</td>
+                        </tr>
+                        <tr class="my-method">
+                            <td><strong>My Method (EKF+IMM)</strong></td>
+                            <td>Camera+LiDAR</td>
+                            <td>78.4%</td>
+                            <td>0.42m</td>
+                            <td>23</td>
+                            <td>12.3 (CPU)</td>
+                        </tr>
+                        <tr>
+                            <td>TrackFormer</td>
+                            <td>Camera</td>
+                            <td>74.5%</td>
+                            <td>0.62m</td>
+                            <td>48</td>
+                            <td>15</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="highlight-box" style="margin-top: 40px;">
+                    <h4>Performance Analysis</h4>
+                    <p>My classical filtering approach achieves competitive results (78.4% MOTA) with established fusion methods while requiring no training data and operating in real-time on CPU only. The 11% gap to state-of-the-art CenterPoint (89.4%) is offset by immediate deployment capability and full interpretability. Position accuracy of 0.42m meets autonomous driving requirements and outperforms pure camera approaches by 52%.</p>
+                </div>
+
+                <h3 class="section-title" style="margin-top: 80px;">Real-Time Tracking Demonstration</h3>
+                <p class="section-text">Live demonstration of the EKF+IMM tracker processing KITTI sequences in real-time. The visualization shows 3D bounding boxes, track IDs, velocity estimates, and model probabilities overlaid on camera and LiDAR point cloud data.</p>
+
+                <div class="viz-grid">
+                    <div class="viz-item viz-full">
+                        <video controls preload="auto" playsinline style="width: 100%; display: block; background: #000; border-radius: 8px;">
+                            <source src="images/tracking_output.mp4" type="video/mp4">
+                            <p style="color: #ff6b6b; padding: 20px; text-align: center;">
+                                Video cannot be displayed. Please ensure <strong>tracking_output.mp4</strong> (6 MB) is in your <strong>images/</strong> folder.
+                            </p>
+                        </video>
+                        <div class="viz-title">Real-Time Multi-Object Tracking on KITTI Dataset</div>
+                    </div>
+                </div>
+
+                <h3 class="section-title" style="margin-top: 80px;">Asynchronous Sensor Fusion</h3>
+                <p class="section-text">Real-world autonomous driving sensors operate asynchronously with varying update rates. The system implements temporal buffering and out-of-sequence measurement handling to properly fuse camera (30 Hz) and LiDAR (10 Hz) streams with realistic delays.</p>
+
+                <div class="viz-grid">
+                    <div class="viz-item viz-full">
+                        <img src="images/asynchronous_fusion_visualization.png" alt="Asynchronous Measurement Handling">
+                        <div class="viz-title">Asynchronous Measurement Arrivals & Temporal Buffering</div>
+                    </div>
+                </div>
+
+                <h3 class="section-title" style="margin-top: 80px;">Data Association & Track Management</h3>
+                <p class="section-text">Hungarian algorithm with Mahalanobis distance gating handles track-to-measurement association. The system maintains track lifecycle states (tentative, confirmed, lost) with adaptive thresholds based on occlusion probability.</p>
+
+                <div class="viz-grid">
+                    <div class="viz-item">
+                        <img src="images/data_association_visualization.png" alt="Data Association Visualization">
+                        <div class="viz-title">Track-to-Measurement Association</div>
+                    </div>
+                    <div class="viz-item">
+                        <img src="images/association_statistics.png" alt="Association Statistics">
+                        <div class="viz-title">Association Performance Statistics</div>
+                    </div>
+                </div>
+
+                <h3 class="section-title" style="margin-top: 80px;">Interacting Multiple Models (IMM)</h3>
+                <p class="section-text">The IMM framework supports both constant-velocity (CV) and coordinated-turn (CT) motion models, automatically adapting to vehicle dynamics. This provides a 54% error reduction on curved trajectories compared to CV-only filtering.</p>
+
+                <div class="viz-grid">
+                    <div class="viz-item">
+                        <img src="images/curved_trajectory_analysis.png" alt="Curved Trajectory Analysis">
+                        <div class="viz-title">IMM Performance on Curved Trajectories</div>
+                    </div>
+                    <div class="viz-item">
+                        <img src="images/per_track_detailed_analysis.png" alt="Per-Track Analysis">
+                        <div class="viz-title">Per-Track Model Selection Analysis</div>
+                    </div>
+                </div>
+
+                <h3 class="section-title" style="margin-top: 80px;">Kalman Filter Tuning & Validation</h3>
+                <p class="section-text">Comprehensive parameter tuning analysis for process noise (Q) and measurement noise (R) matrices. Synthetic validation demonstrates filter convergence and uncertainty estimation accuracy before real-world deployment.</p>
+
+                <div class="viz-grid">
+                    <div class="viz-item">
+                        <img src="images/kalman_filter_test_synthetic.png" alt="Kalman Filter Synthetic Test">
+                        <div class="viz-title">Synthetic Trajectory Validation</div>
+                    </div>
+                    <div class="viz-item">
+                        <img src="images/kalman_filter_noise_tuning.png" alt="Process Noise Effect">
+                        <div class="viz-title">Process Noise Parameter Analysis</div>
+                    </div>
+                    <div class="viz-item">
+                        <img src="images/measurement_updates_visualization.png" alt="Measurement Updates">
+                        <div class="viz-title">Sensor Fusion Measurement Updates</div>
+                    </div>
+                </div>
+
+                <h3 class="section-title" style="margin-top: 80px;">Parameter Optimization Studies</h3>
+                <p class="section-text">Systematic evaluation of filter parameters reveals robust performance across wide parameter ranges. Noise parameters (Q, R) show low sensitivity, while gating threshold and lifecycle parameters require careful tuning for optimal track retention.</p>
+
+                <div class="viz-grid">
+                    <div class="viz-item">
+                        <img src="images/01_noise_parameters.png" alt="Noise Parameter Tuning">
+                        <div class="viz-title">Noise Parameter Optimization</div>
+                    </div>
+                    <div class="viz-item">
+                        <img src="images/02_gating_threshold.png" alt="Gating Threshold Analysis">
+                        <div class="viz-title">Gating Threshold Impact</div>
+                    </div>
+                    <div class="viz-item">
+                        <img src="images/03_lifecycle_parameters.png" alt="Track Lifecycle Parameters">
+                        <div class="viz-title">Track Lifecycle Parameter Tuning</div>
+                    </div>
+                    <div class="viz-item">
+                        <img src="images/04_parameter_sensitivity.png" alt="Parameter Sensitivity">
+                        <div class="viz-title">Parameter Sensitivity Analysis</div>
+                    </div>
+                    <div class="viz-item viz-full">
+                        <img src="images/05_performance_distribution.png" alt="Performance Distribution">
+                        <div class="viz-title">Overall Performance Distribution</div>
+                    </div>
+                </div>
+
+                <h3 class="section-title" style="margin-top: 80px;">Occlusion Robustness Analysis</h3>
+                <p class="section-text">A critical capability for autonomous driving is maintaining track continuity through extended occlusions when objects temporarily disappear behind obstacles. The system implements predictive tracking with exponential covariance growth during missing measurements and HOG-based re-identification for track recovery.</p>
+
+                <div class="viz-grid">
+                    <div class="viz-item viz-full">
+                        <img src="images/03_robustness_score.png" alt="Tracker Robustness Score">
+                        <div class="viz-title">Robustness Score Across Occlusion Levels</div>
+                    </div>
+                    <div class="viz-item viz-full">
+                        <img src="images/01_performance_comparison.png" alt="Occlusion Performance Analysis">
+                        <div class="viz-title">Multi-Metric Occlusion Performance Analysis</div>
+                    </div>
+                    <div class="viz-item">
+                        <img src="images/02_degradation_analysis.png" alt="Degradation Analysis">
+                        <div class="viz-title">Performance Degradation Under Occlusion</div>
+                    </div>
+                    <div class="viz-item">
+                        <img src="images/04_comparison_table.png" alt="Occlusion Test Results">
+                        <div class="viz-title">Quantitative Occlusion Test Results</div>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 40px;">
+                    <h4>Key Occlusion Findings</h4>
+                    <p><strong>Excellent Robustness:</strong> System maintains 60-64% robustness score across occlusion levels up to 50%, qualifying as "Good" (60-80%) performance • <strong>Track Retention:</strong> 92% track retention achieved through extended occlusions with only 92 ID switches at baseline • <strong>Graceful Degradation:</strong> At 50% occlusion, MOTA decreases by 28% while ID switches reduce by 41%, demonstrating the system handles missing measurements better than track association in challenging conditions • <strong>Hidden Detection Management:</strong> System successfully handles 244 hidden detections at 50% occlusion level while maintaining tracking continuity</p>
+                </div>
+
+                <h3 class="section-title" style="margin-top: 80px;">Technical Implementation</h3>
+                <p class="section-text">The system is implemented in Python with careful optimization for real-time performance. Key architectural decisions include sparse matrix operations for covariance propagation (2.3× speedup), KD-tree acceleration for nearest-neighbor association (4.1× speedup), and measurement buffering for handling asynchronous sensor arrivals.</p>
+
+                <div class="tech-stack">
+                    <div class="tech-item">Python 3.9</div>
+                    <div class="tech-item">NumPy</div>
+                    <div class="tech-item">SciPy Optimization</div>
+                    <div class="tech-item">OpenCV</div>
+                    <div class="tech-item">KITTI Dataset</div>
+                    <div class="tech-item">Extended Kalman Filter</div>
+                    <div class="tech-item">Hungarian Algorithm</div>
+                    <div class="tech-item">IMM Framework</div>
+                </div>
+
+                <h3 class="section-title" style="margin-top: 80px;">Key Achievements & Trade-offs</h3>
+                
+                <div class="highlight-box">
+                    <h4>Strengths of Classical Approach</h4>
+                    <p><strong>Zero Training Data:</strong> Works immediately on new datasets without retraining • <strong>Computational Efficiency:</strong> 12.3 Hz on CPU vs. GPU-dependent deep learning methods • <strong>Full Interpretability:</strong> Every tracking decision traceable to mathematical model • <strong>Robust Occlusion Handling:</strong> 92% track retention through 5+ second occlusions</p>
+                </div>
+
+                <div class="highlight-box">
+                    <h4>Where Deep Learning Excels</h4>
+                    <p><strong>Absolute Accuracy:</strong> 11% MOTA gap to state-of-the-art (CenterPoint: 89.4%) • <strong>Dense Traffic:</strong> Learned features handle crowded scenarios better • <strong>Long-Range Tracking:</strong> Image-based representations overcome LiDAR sparsity at 50m+ distances</p>
+                </div>
+
+                <h3 class="section-title" style="margin-top: 80px;">Research Applications</h3>
+                <p class="section-text">This work demonstrates that classical sensor fusion provides a practical baseline for autonomous driving perception systems, particularly when training data is limited, computational resources are constrained, or full interpretability is required for safety-critical applications. The modular architecture serves as a foundation for hybrid approaches that combine classical filtering with learned components.</p>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        window.addEventListener('load', () => {
+            document.querySelectorAll('.stat-card').forEach((card, index) => {
+                const number = card.querySelector('.stat-number');
+                const text = number.textContent;
+                const value = parseFloat(text);
+                
+                if (!isNaN(value) && value > 0 && value < 100) {
+                    number.textContent = '0';
+                    setTimeout(() => {
+                        let current = 0;
+                        const increment = value / 50;
+                        const timer = setInterval(() => {
+                            current += increment;
+                            if (current >= value) {
+                                number.textContent = text;
+                                clearInterval(timer);
+                            } else {
+                                number.textContent = current.toFixed(1) + (text.includes('%') ? '%' : text.includes('m') ? 'm' : '');
+                            }
+                        }, 20);
+                    }, index * 100);
+                }
+            });
+        });
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+    <script>
+        // Page loader
+        window.addEventListener("load", function() {
+            const loader = document.querySelector(".page-loader");
+            setTimeout(() => {
+                loader.classList.add("hidden");
+            }, 500);
+        });
+
+        // Scroll progress indicator
+        window.addEventListener("scroll", function() {
+            const scrollProgress = document.querySelector(".scroll-progress");
+            const windowHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (window.scrollY / windowHeight) * 100;
+            scrollProgress.style.width = scrolled + "%";
+        });
+
+        // Scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: "0px 0px -100px 0px"
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add("visible");
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll(".scroll-fade").forEach(el => observer.observe(el));
+    </script>
+</body>
+</html>

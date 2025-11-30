@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Engineering Tools - Montee Oluwole</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="alternate icon" href="favicon.ico">
+    <link rel="apple-touch-icon" href="favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=JetBrains+Mono:wght@300;400;500&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0a0e27;
+            --secondary: #1a1f3a;
+            --accent: #00d4ff;
+            --accent-glow: rgba(0, 212, 255, 0.4);
+            --copper: #c87533;
+            --text: #e4e6eb;
+            --text-dim: #9ba3af;
+            --grid: rgba(0, 212, 255, 0.08);
+            --transition: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Loading Animation */
+        .page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            transition: opacity 0.5s, visibility 0.5s;
+        }
+
+        .page-loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loader-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(0, 212, 255, 0.2);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Scroll Progress Indicator */
+        .scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--copper));
+            z-index: 9999;
+            transition: width 0.1s ease;
+        }
+
+        /* Scroll Fade Animations */
+        .scroll-fade {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: opacity 0.8s var(--transition), transform 0.8s var(--transition);
+        }
+
+        .scroll-fade.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+
+        body {
+            font-family: 'Manrope', sans-serif;
+            background: var(--primary);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .background-grid {
+
+        @keyframes gridPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+            position: fixed;
+
+            top: 0;
+
+            left: 0;
+
+            width: 100%;
+
+            height: 100%;
+
+            background-image: 
+
+                linear-gradient(var(--grid) 1px, transparent 1px),
+
+                linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+
+            background-size: 40px 40px;
+
+            pointer-events: none;
+
+            z-index: 0;
+
+            opacity: 1;
+
+            animation: gridPulse 20s ease-in-out infinite;
+
+        }
+
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 40px;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            padding: 40px 0;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--accent);
+            text-decoration: none;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 2px;
+            transition: all 0.3s var(--transition);
+        }
+
+        .back-link:hover {
+            gap: 15px;
+            color: var(--text);
+        }
+
+        .hero {
+            padding: 80px 0 60px;
+            text-align: center;
+        }
+
+        .project-tag {
+            display: inline-block;
+            color: var(--copper);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            margin-bottom: 20px;
+            padding: 8px 20px;
+            border: 1px solid var(--copper);
+            border-radius: 4px;
+        }
+
+        .hero-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 48px;
+            font-weight: 900;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, var(--text), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 20px;
+            color: var(--text-dim);
+            max-width: 900px;
+            margin: 0 auto;
+            line-height: 1.8;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin: 60px 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(200, 117, 51, 0.1));
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s var(--transition);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
+        }
+
+        .stat-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 36px;
+            font-weight: 900;
+            color: var(--accent);
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: var(--text-dim);
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .content-section {
+            margin: 80px 0;
+        }
+
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--accent);
+        }
+
+        .section-text {
+            color: var(--text-dim);
+            font-size: 18px;
+            line-height: 1.8;
+            margin-bottom: 30px;
+        }
+
+        .tool-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 12px;
+            padding: 40px;
+            margin: 40px 0;
+            transition: all 0.3s var(--transition);
+        }
+
+        .tool-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.2);
+        }
+
+        .tool-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .tool-number {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 48px;
+            font-weight: 900;
+            color: var(--accent);
+            opacity: 0.3;
+        }
+
+        .tool-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .tool-description {
+            color: var(--text-dim);
+            font-size: 18px;
+            line-height: 1.8;
+            margin-bottom: 25px;
+        }
+
+        .tool-features {
+            list-style: none;
+            margin-top: 20px;
+        }
+
+        .tool-features li {
+            padding: 12px 0;
+            padding-left: 30px;
+            position: relative;
+            color: var(--text);
+            border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+        }
+
+        .tool-features li:before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+            font-size: 18px;
+        }
+
+        .tool-features li:last-child {
+            border-bottom: none;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(200, 117, 51, 0.1));
+            border-left: 4px solid var(--copper);
+            padding: 30px;
+            margin: 30px 0;
+            border-radius: 8px;
+        }
+
+        .highlight-box h4 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--copper);
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .highlight-box p {
+            color: var(--text-dim);
+            line-height: 1.8;
+        }
+
+        .flowchart {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 12px;
+            padding: 50px;
+            margin: 40px 0;
+            overflow-x: auto;
+        }
+
+        .flowchart-container {
+            min-width: 800px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .flow-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .flow-box {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.15), rgba(200, 117, 51, 0.15));
+            border: 2px solid var(--accent);
+            border-radius: 8px;
+            padding: 25px 35px;
+            min-width: 280px;
+            text-align: center;
+        }
+
+        .flow-box.start {
+            border-color: var(--copper);
+            background: linear-gradient(135deg, rgba(200, 117, 51, 0.2), rgba(0, 212, 255, 0.1));
+        }
+
+        .flow-box.end {
+            border-color: #4ade80;
+            background: linear-gradient(135deg, rgba(74, 222, 128, 0.2), rgba(0, 212, 255, 0.1));
+        }
+
+        .flow-box-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .flow-box.start .flow-box-title {
+            color: var(--copper);
+        }
+
+        .flow-box.end .flow-box-title {
+            color: #4ade80;
+        }
+
+        .flow-box-content {
+            font-size: 14px;
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .flow-arrow {
+            font-size: 36px;
+            color: var(--accent);
+        }
+
+        .flow-arrow.down {
+            transform: rotate(90deg);
+        }
+
+        .flow-split {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .tech-stack {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .tech-item {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .tech-item strong {
+            color: var(--accent);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .tech-item span {
+            color: var(--text-dim);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .benefit-card {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(200, 117, 51, 0.1));
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 8px;
+            padding: 25px;
+        }
+
+        .benefit-card h5 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--copper);
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .benefit-card p {
+            color: var(--text-dim);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        footer {
+            padding: 60px 0;
+            margin-top: 120px;
+            border-top: 1px solid rgba(0, 212, 255, 0.2);
+            text-align: center;
+        }
+
+        footer p {
+            color: var(--text-dim);
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 32px;
+            }
+
+            .section-title {
+                font-size: 24px;
+            }
+
+            .container {
+                padding: 0 20px;
+            }
+
+            .stats-grid,
+            .tech-stack,
+            .benefits-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .flowchart {
+                padding: 30px 20px;
+            }
+
+            .flow-box {
+                min-width: 200px;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Animation -->
+    <div class="page-loader">
+        <div class="loader-spinner"></div>
+    </div>
+    
+    <!-- Scroll Progress Bar -->
+    <div class="scroll-progress"></div>
+    <div class="background-grid"></div>
+
+    <header>
+        <div class="container">
+            <nav>
+                <a href="index.html" class="back-link">
+                    <span>←</span>
+                    <span>BACK TO HOME</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <div class="project-tag">PROFESSIONAL PROJECT</div>
+                <h1 class="hero-title">Python Engineering Tools</h1>
+                <p class="hero-subtitle">Custom Python applications for manufacturing workflow optimization at WAM Industries and Maxxit Group. Developed specialized tools for DXF processing, dimensional verification, and automated CAD drawing generation to streamline production workflows and eliminate manual errors.</p>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">3</div>
+                        <div class="stat-label">Core Tools</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">90%</div>
+                        <div class="stat-label">Time Saved</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">100%</div>
+                        <div class="stat-label">Accuracy</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">Python</div>
+                        <div class="stat-label">Core Language</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container">
+                <h2 class="section-title">Overview</h2>
+                <p class="section-text">Developed a suite of specialized Python tools to address critical bottlenecks in the manufacturing workflow. These tools automate time-consuming manual tasks, eliminate human error in dimensional verification, and establish the foundation for fully automated drawing production systems.</p>
+
+                <div class="highlight-box">
+                    <h4>Business Impact</h4>
+                    <p>The Python tool suite reduced CNC programming preparation time by 90%, eliminated dimensional cross-checking errors that previously caused production delays, and established a scalable framework for automated drawing generation that will save hundreds of engineering hours annually.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container">
+                <h2 class="section-title">Developed Tools</h2>
+
+                <div class="tool-card">
+                    <div class="tool-header">
+                        <div class="tool-number">01</div>
+                        <div class="tool-title">DXF Layer Filter for CNC Toolpaths</div>
+                    </div>
+                    <div class="tool-description">
+                        Automated DXF processing tool that isolates and preserves only desired layers containing CNC toolpath data, eliminating manual layer management in CAM software. The tool reads DXF files exported from SolidWorks, identifies toolpath layers based on configurable naming conventions, and generates cleaned DXF files ready for direct import into CNC programming systems.
+                    </div>
+                    <ul class="tool-features">
+                        <li>Automatic layer detection and filtering based on user-defined patterns</li>
+                        <li>Batch processing capability for processing 100+ DXF files overnight</li>
+                        <li>Preservation of geometric integrity and dimensioning accuracy</li>
+                        <li>Configurable layer naming rules matching production standards</li>
+                        <li>Elimination of manual layer deletion reducing prep time from 10 minutes to 10 seconds per file</li>
+                        <li>Error logging and validation reports for quality assurance</li>
+                    </ul>
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h4>Technical Implementation</h4>
+                        <p>Built using the ezdxf Python library for DXF file manipulation. The tool parses DXF entity structure, extracts layer definitions, filters entities based on layer assignments, and reconstructs DXF files containing only specified layers. Implemented with configurable JSON-based layer rules allowing non-programmers to update filtering criteria without code modifications.</p>
+                    </div>
+                </div>
+
+                <div class="tool-card">
+                    <div class="tool-header">
+                        <div class="tool-number">02</div>
+                        <div class="tool-title">DXF Bounding Box Measurement System</div>
+                    </div>
+                    <div class="tool-description">
+                        Automated dimensional verification tool that extracts bounding box dimensions from DXF files and generates comparison reports for cross-checking against PDF engineering drawings. Production teams use this tool to verify that exported DXF files match drawing specifications before initiating CNC operations, preventing costly manufacturing errors.
+                    </div>
+                    <ul class="tool-features">
+                        <li>Automatic extraction of X, Y, Z bounding box dimensions from DXF geometry</li>
+                        <li>Batch processing of entire project folders with recursive directory scanning</li>
+                        <li>Excel report generation with dimensions formatted for easy comparison with PDF drawings</li>
+                        <li>Tolerance-based validation flagging files exceeding specified dimensional thresholds</li>
+                        <li>Support for both 2D flat pattern DXFs and 3D model exports</li>
+                        <li>Integration with file naming conventions for automatic part number extraction</li>
+                    </ul>
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h4>Technical Implementation</h4>
+                        <p>Utilizes ezdxf for DXF parsing and NumPy for geometric calculations. The tool iterates through all entities in the DXF, extracts vertex coordinates, computes minimum/maximum extents in each axis, and calculates bounding box dimensions. Results are exported to Excel using openpyxl with conditional formatting highlighting dimensional discrepancies exceeding user-defined tolerances.</p>
+                    </div>
+                </div>
+
+                <div class="tool-card">
+                    <div class="tool-header">
+                        <div class="tool-number">03</div>
+                        <div class="tool-title">Python-SolidWorks API Integration Plan</div>
+                    </div>
+                    <div class="tool-description">
+                        Comprehensive automation framework design for Python-driven SolidWorks drawing generation using a top-down approach from assembly level. The system will automatically create detailed drawings for all parts and subassemblies within a master assembly, applying standardized view layouts, dimension schemes, and annotation templates based on component type and manufacturing process.
+                    </div>
+                    <ul class="tool-features">
+                        <li>Top-down assembly traversal identifying all unique parts and subassemblies</li>
+                        <li>Automated drawing creation with configurable view layouts (front, top, right, isometric)</li>
+                        <li>Smart view selection based on part geometry and dominant features</li>
+                        <li>Template-based dimension placement using feature recognition algorithms</li>
+                        <li>Automatic section views for complex internal features</li>
+                        <li>Bill of Materials (BOM) generation and balloon annotation</li>
+                        <li>Custom property population from ERP system database</li>
+                        <li>Batch processing capability for entire product assemblies (500+ parts)</li>
+                    </ul>
+
+                    <h3 class="section-title" style="margin-top: 50px; font-size: 24px;">System Architecture Flowchart</h3>
+                    
+                    <div class="flowchart">
+                        <div class="flowchart-container">
+                            <div class="flow-row">
+                                <div class="flow-box start">
+                                    <div class="flow-box-title">START</div>
+                                    <div class="flow-box-content">Python Script Initialized<br>Assembly File Selected</div>
+                                </div>
+                            </div>
+
+                            <div class="flow-row">
+                                <div class="flow-arrow down">→</div>
+                            </div>
+
+                            <div class="flow-row">
+                                <div class="flow-box">
+                                    <div class="flow-box-title">Step 1: SolidWorks Connection</div>
+                                    <div class="flow-box-content">Python connects to SolidWorks via COM API<br>win32com.client interface established</div>
+                                </div>
+                            </div>
+
+                            <div class="flow-row">
+                                <div class="flow-arrow down">→</div>
+                            </div>
+
+                            <div class="flow-row">
+                                <div class="flow-box">
+                                    <div class="flow-box-title">Step 2: Assembly Traversal</div>
+                                    <div class="flow-box-content">Open assembly file<br>Recursively traverse component tree<br>Extract all unique parts and subassemblies</div>
+                                </div>
+                            </div>
+
+                            <div class="flow-row">
+                                <div class="flow-arrow down">→</div>
+                            </div>
+
+                            <div class="flow-row">
+                                <div class="flow-box">
+                                    <div class="flow-box-title">Step 3: Component Classification</div>
+                                    <div class="flow-box-content">Analyze each component:<br>• Part type (sheet metal, machined, purchased)<br>• Geometry characteristics<br>• Manufacturing process requirements</div>
+                                </div>
+                            </div>
+
+                            <div class="flow-row">
+                                <div class="flow-arrow down">→</div>
+                            </div>
+
+                            <div class="flow-row">
+                                <div class="flow-box">
+                                    <div class="flow-box-title">Step 4: Template Selection</div>
+                                    <div class="flow-box-content">Select drawing template based on:<br>• Component classification<br>• Size category<br>• Complexity level</div>
+                                </div>
+                            </div>
+
+                            <div class="flow-row">
+                                <div class="flow-arrow down">→</div>
+                            </div>
+
+                            <div class="flow-row">
+                                <div class="flow-box">
+                                    <div class="flow-box-title">Step 5: Drawing Creation</div>
+                                    <div class="flow-box-content">For each component:<br>• Create new drawing from template<br>• Insert standard views (front, top, right)<br>• Add isometric view<br>• Generate section views if needed</div>
+                                </div>
+                            </div>
+
+                            <div class="flow-row">
+                                <div class="flow-arrow down">→</div>
+                            </div>
+
+                            <div class="flow-row">
+                                <div class="flow-box">
+                                    <div class="flow-box-title">Step 6: Dimension Application</div>
+                                    <div class="flow-box-content">Apply dimensions via feature recognition:<br>• Extract critical dimensions<br>• Apply GD&T tolerances<br>• Position dimensions per ASME Y14.5</div>
+                                </div>
+                            </div>
+
+                            <div class="flow-row">
+                                <div class="flow-arrow down">→</div>
+                            </div>
+
+                            <div class="flow-row">
+                                <div class="flow-box">
+                                    <div class="flow-box-title">Step 7: Annotation & Properties</div>
+                                    <div class="flow-box-content">• Populate title block with custom properties<br>• Add material specifications<br>• Insert finish callouts<br>• Generate notes and warnings</div>
+                                </div>
+                            </div>
+
+                            <div class="flow-row">
+                                <div class="flow-arrow down">→</div>
+                            </div>
+
+                            <div class="flow-row">
+                                <div class="flow-box">
+                                    <div class="flow-box-title">Step 8: Quality Validation</div>
+                                    <div class="flow-box-content">Automated checks:<br>• All views properly oriented<br>• Dimensions meet minimum requirements<br>• Title block completeness<br>• Drawing standards compliance</div>
+                                </div>
+                            </div>
+
+                            <div class="flow-row">
+                                <div class="flow-arrow down">→</div>
+                            </div>
+
+                            <div class="flow-row">
+                                <div class="flow-box">
+                                    <div class="flow-box-title">Step 9: File Export</div>
+                                    <div class="flow-box-content">Save drawing file:<br>• .SLDDRW native format<br>• PDF export for manufacturing<br>• DXF export for CNC operations</div>
+                                </div>
+                            </div>
+
+                            <div class="flow-row">
+                                <div class="flow-arrow down">→</div>
+                            </div>
+
+                            <div class="flow-row">
+                                <div class="flow-box">
+                                    <div class="flow-box-title">Step 10: Reporting</div>
+                                    <div class="flow-box-content">Generate summary report:<br>• Total components processed<br>• Successful drawings created<br>• Errors and warnings<br>• Processing time statistics</div>
+                                </div>
+                            </div>
+
+                            <div class="flow-row">
+                                <div class="flow-arrow down">→</div>
+                            </div>
+
+                            <div class="flow-row">
+                                <div class="flow-box end">
+                                    <div class="flow-box-title">COMPLETE</div>
+                                    <div class="flow-box-content">All drawings generated<br>Ready for manufacturing release</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h4>Implementation Strategy</h4>
+                        <p>The system leverages Python's win32com library to interface with the SolidWorks COM API. The top-down approach begins at the assembly level, traversing the component tree recursively to identify all unique parts. Each component is classified by type (sheet metal, machined, purchased) and geometry characteristics, triggering appropriate drawing templates and dimension schemes. Feature recognition algorithms analyze part geometry to determine optimal view orientations and identify critical dimensions for automatic annotation.</p>
+                    </div>
+
+                    <div class="highlight-box">
+                        <h4>Expected Benefits</h4>
+                        <p>Full implementation will reduce drawing creation time from 30 minutes per part to under 2 minutes, ensure 100% consistency in drawing standards across all projects, eliminate human errors in view selection and dimension placement, and enable overnight batch processing of entire product assemblies containing 500+ components. The system will capture expert engineering knowledge in configurable templates, making it accessible to junior engineers and ensuring consistency across engineering shifts.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container">
+                <h2 class="section-title">Technology Stack</h2>
+                
+                <div class="tech-stack">
+                    <div class="tech-item">
+                        <strong>Python 3.x</strong>
+                        <span>Core programming language for all automation tools and SolidWorks API integration</span>
+                    </div>
+                    <div class="tech-item">
+                        <strong>ezdxf Library</strong>
+                        <span>DXF file parsing, manipulation, and generation for CAD data processing</span>
+                    </div>
+                    <div class="tech-item">
+                        <strong>NumPy</strong>
+                        <span>Geometric calculations, bounding box analysis, and dimensional computations</span>
+                    </div>
+                    <div class="tech-item">
+                        <strong>openpyxl</strong>
+                        <span>Excel report generation with formatted tables and conditional highlighting</span>
+                    </div>
+                    <div class="tech-item">
+                        <strong>win32com</strong>
+                        <span>COM interface for Python-SolidWorks API communication</span>
+                    </div>
+                    <div class="tech-item">
+                        <strong>SolidWorks API</strong>
+                        <span>Programmatic access to SolidWorks models, drawings, and assembly structures</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container">
+                <h2 class="section-title">Key Benefits</h2>
+                
+                <div class="benefits-grid">
+                    <div class="benefit-card">
+                        <h5>Time Efficiency</h5>
+                        <p>DXF layer filtering reduced CNC prep time from 10 minutes to 10 seconds per file. Bounding box measurement eliminated 20 minutes of manual cross-checking per drawing package.</p>
+                    </div>
+                    <div class="benefit-card">
+                        <h5>Error Elimination</h5>
+                        <p>Automated dimensional verification eliminated 100% of manual measurement errors. Standardized layer filtering prevents toolpath layer deletion mistakes.</p>
+                    </div>
+                    <div class="benefit-card">
+                        <h5>Scalability</h5>
+                        <p>Batch processing capabilities enable overnight processing of entire projects. Single script execution can process 500+ files without human intervention.</p>
+                    </div>
+                    <div class="benefit-card">
+                        <h5>Quality Assurance</h5>
+                        <p>Automated validation and reporting provide audit trails for all processing operations. Exception handling ensures robust operation in production environments.</p>
+                    </div>
+                    <div class="benefit-card">
+                        <h5>Knowledge Capture</h5>
+                        <p>Automation codifies expert engineering knowledge in configurable rules and templates, making best practices accessible to all team members.</p>
+                    </div>
+                    <div class="benefit-card">
+                        <h5>Future Scalability</h5>
+                        <p>Python-SolidWorks integration framework establishes foundation for comprehensive drawing automation, targeting 95% reduction in manual drawing creation effort.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Montee Oluwole. Engineering Portfolio.</p>
+        </div>
+    </footer>
+    <script>
+        // Page loader
+        window.addEventListener("load", function() {
+            const loader = document.querySelector(".page-loader");
+            setTimeout(() => {
+                loader.classList.add("hidden");
+            }, 500);
+        });
+
+        // Scroll progress indicator
+        window.addEventListener("scroll", function() {
+            const scrollProgress = document.querySelector(".scroll-progress");
+            const windowHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (window.scrollY / windowHeight) * 100;
+            scrollProgress.style.width = scrolled + "%";
+        });
+
+        // Scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: "0px 0px -100px 0px"
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add("visible");
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll(".scroll-fade").forEach(el => observer.observe(el));
+    </script>
+</body>
+</html>

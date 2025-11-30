@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CNC Programming & DFMA - Montee Oluwole</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="alternate icon" href="favicon.ico">
+    <link rel="apple-touch-icon" href="favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=JetBrains+Mono:wght@300;400;500&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0a0e27;
+            --secondary: #1a1f3a;
+            --accent: #00d4ff;
+            --accent-glow: rgba(0, 212, 255, 0.4);
+            --copper: #c87533;
+            --text: #e4e6eb;
+            --text-dim: #9ba3af;
+            --grid: rgba(0, 212, 255, 0.08);
+            --transition: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Loading Animation */
+        .page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            transition: opacity 0.5s, visibility 0.5s;
+        }
+
+        .page-loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loader-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(0, 212, 255, 0.2);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Scroll Progress Indicator */
+        .scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--copper));
+            z-index: 9999;
+            transition: width 0.1s ease;
+        }
+
+        /* Scroll Fade Animations */
+        .scroll-fade {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: opacity 0.8s var(--transition), transform 0.8s var(--transition);
+        }
+
+        .scroll-fade.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+
+        body {
+            font-family: 'Manrope', sans-serif;
+            background: var(--primary);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .background-grid {
+
+        @keyframes gridPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+            position: fixed;
+
+            top: 0;
+
+            left: 0;
+
+            width: 100%;
+
+            height: 100%;
+
+            background-image: 
+
+                linear-gradient(var(--grid) 1px, transparent 1px),
+
+                linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+
+            background-size: 40px 40px;
+
+            pointer-events: none;
+
+            z-index: 0;
+
+            opacity: 1;
+
+            animation: gridPulse 20s ease-in-out infinite;
+
+        }
+
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 40px;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            padding: 40px 0;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--accent);
+            text-decoration: none;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 2px;
+            transition: all 0.3s var(--transition);
+        }
+
+        .back-link:hover {
+            gap: 15px;
+            color: var(--text);
+        }
+
+        .hero {
+            padding: 80px 0 60px;
+            text-align: center;
+        }
+
+        .project-tag {
+            display: inline-block;
+            color: var(--copper);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            margin-bottom: 20px;
+            padding: 8px 20px;
+            border: 1px solid var(--copper);
+            border-radius: 4px;
+        }
+
+        .hero-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 48px;
+            font-weight: 900;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, var(--text), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 20px;
+            color: var(--text-dim);
+            max-width: 1000px;
+            margin: 0 auto;
+            line-height: 1.8;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin: 60px 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(200, 117, 51, 0.1));
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s var(--transition);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
+        }
+
+        .stat-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 36px;
+            font-weight: 900;
+            color: var(--accent);
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: var(--text-dim);
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .content-section {
+            margin: 80px 0;
+        }
+
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--accent);
+        }
+
+        .section-text {
+            color: var(--text-dim);
+            font-size: 18px;
+            line-height: 1.8;
+            margin-bottom: 30px;
+        }
+
+        .company-section {
+            margin: 80px 0;
+            padding: 50px 0;
+            border-top: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .company-header {
+            margin-bottom: 40px;
+        }
+
+        .company-name {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 36px;
+            font-weight: 900;
+            color: var(--copper);
+            margin-bottom: 15px;
+        }
+
+        .company-role {
+            font-size: 18px;
+            color: var(--accent);
+            margin-bottom: 20px;
+        }
+
+        .company-description {
+            color: var(--text-dim);
+            font-size: 18px;
+            line-height: 1.8;
+        }
+
+        .project-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .project-item {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s var(--transition);
+        }
+
+        .project-item:hover {
+            border-color: var(--accent);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.2);
+        }
+
+        .project-image {
+            width: 100%;
+            height: 300px;
+            object-fit: contain;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.05), rgba(200, 117, 51, 0.05));
+        }
+
+        .project-info {
+            padding: 25px;
+        }
+
+        .project-name {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 10px;
+        }
+
+        .project-details {
+            color: var(--text-dim);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(200, 117, 51, 0.1));
+            border-left: 4px solid var(--copper);
+            padding: 30px;
+            margin: 30px 0;
+            border-radius: 8px;
+        }
+
+        .highlight-box h4 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--copper);
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .highlight-box p {
+            color: var(--text-dim);
+            line-height: 1.8;
+        }
+
+        .features-list {
+            list-style: none;
+            margin: 20px 0;
+        }
+
+        .features-list li {
+            padding: 12px 0;
+            padding-left: 30px;
+            position: relative;
+            color: var(--text);
+            border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+        }
+
+        .features-list li:before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+            font-size: 18px;
+        }
+
+        .features-list li:last-child {
+            border-bottom: none;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin: 30px auto;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+        }
+
+        .video-container video {
+            width: 100%;
+            display: block;
+        }
+
+        footer {
+            padding: 60px 0;
+            margin-top: 120px;
+            border-top: 1px solid rgba(0, 212, 255, 0.2);
+            text-align: center;
+        }
+
+        footer p {
+            color: var(--text-dim);
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 32px;
+            }
+
+            .section-title {
+                font-size: 24px;
+            }
+
+            .company-name {
+                font-size: 28px;
+            }
+
+            .container {
+                padding: 0 20px;
+            }
+
+            .project-gallery {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Animation -->
+    <div class="page-loader">
+        <div class="loader-spinner"></div>
+    </div>
+    
+    <!-- Scroll Progress Bar -->
+    <div class="scroll-progress"></div>
+    <div class="background-grid"></div>
+
+    <header>
+        <div class="container">
+            <nav>
+                <a href="index.html" class="back-link">
+                    <span>←</span>
+                    <span>BACK TO HOME</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <div class="project-tag">PROFESSIONAL PROJECT</div>
+                <h1 class="hero-title">CNC Programming & Design for Manufacturing</h1>
+                <p class="hero-subtitle">Comprehensive manufacturing engineering experience across aerospace, architectural metalwork, retail fixtures, modular systems, and precision tooling. Specialized in advanced CNC programming, toolpath optimization, and design for manufacturing and assembly (DFMA) principles to deliver complex projects on time and within tolerance.</p>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">5</div>
+                        <div class="stat-label">Companies</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">1000+</div>
+                        <div class="stat-label">Parts Programmed</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">±0.001"</div>
+                        <div class="stat-label">Typical Tolerance</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">Mastercam</div>
+                        <div class="stat-label">Primary CAM Software</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Maxxit Group Section -->
+        <section class="company-section">
+            <div class="container">
+                <div class="company-header">
+                    <h2 class="company-name">Maxxit Group</h2>
+                    <p class="company-role">Manufacturing Detailer</p>
+                    <p class="company-description">Specialized in architectural metalwork for high-profile institutional and commercial projects. Created detailed manufacturing drawings and CNC programs for complex curved and linear metal assemblies for building facades, feature installations, and interior architectural elements. Collaborated with architects and designers to translate creative visions into manufacturable production documentation while optimizing for material utilization and fabrication efficiency.</p>
+                </div>
+
+                <div class="project-gallery">
+                    <div class="project-item">
+                        <img src="images/Maxxit_Dream_wheel.png" alt="Dream Wheel American Dream" class="project-image">
+                        <div class="project-info">
+                            <h3 class="project-name">Dream Wheel - American Dream Mall</h3>
+                            <p class="project-details">Vibrant entertainment center with custom LED-integrated metal panels requiring precise CNC fabrication for curved structural elements and mounting systems.</p>
+                        </div>
+                    </div>
+
+                    <div class="project-item">
+                        <img src="images/Maxxit_UBC_Arts_Student_Centre.jpg" alt="UBC Arts Student Centre" class="project-image">
+                        <div class="project-info">
+                            <h3 class="project-name">UBC Arts Student Centre</h3>
+                            <p class="project-details">Cylindrical building envelope with vertical metal fin system programmed for high-precision cutting and forming operations.</p>
+                        </div>
+                    </div>
+
+                    <div class="project-item">
+                        <img src="images/Maxxit_601_West_Hastings.jpg" alt="601 West Hastings" class="project-image">
+                        <div class="project-info">
+                            <h3 class="project-name">601 West Hastings</h3>
+                            <p class="project-details">Commercial building featuring sculptural wooden canopy structure with complex CNC-machined metal support brackets and connection systems.</p>
+                        </div>
+                    </div>
+
+                    <div class="project-item">
+                        <img src="images/Maxxit_Humber_College.jpg" alt="Humber College" class="project-image">
+                        <div class="project-info">
+                            <h3 class="project-name">Humber College</h3>
+                            <p class="project-details">Educational facility with decorative LED-backlit wall panels featuring thousands of precisely CNC-cut hexagonal perforations in specific patterns.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h4>Key Contributions</h4>
+                    <p>Developed efficient CNC workflows for architectural metalwork enabling on-time delivery of high-visibility projects. Implemented toolpath optimization strategies reducing cycle times by 25% while maintaining tight tolerances required for seamless panel-to-panel alignment in large facade assemblies. Collaborated with fabrication teams to establish DFMA guidelines ensuring CNC-friendly designs reducing downstream manufacturing challenges.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- WAM Industries Section -->
+        <section class="company-section">
+            <div class="container">
+                <div class="company-header">
+                    <h2 class="company-name">WAM Industries</h2>
+                    <p class="company-role">Manufacturing Engineer</p>
+                    <p class="company-description">Focused on retail fixture manufacturing for premium brands requiring exceptional fit and finish. Developed CNC programs and manufacturing processes for custom display systems, shelving units, and store installations combining aesthetics with structural integrity. Emphasized DFMA principles to streamline production workflows while meeting strict brand standards for visual presentation and assembly efficiency.</p>
+                </div>
+
+                <div class="project-gallery">
+                    <div class="project-item">
+                        <img src="images/WAM_WARBY_PARKER.jpg" alt="Warby Parker" class="project-image">
+                        <div class="project-info">
+                            <h3 class="project-name">Warby Parker Display Fixtures</h3>
+                            <p class="project-details">Custom wood and metal eyewear display systems with integrated lighting. Programmed precision pockets and mounting features for modular shelving units maintaining ±0.005" tolerances for seamless assembly.</p>
+                        </div>
+                    </div>
+
+                    <div class="project-item">
+                        <img src="images/WAM_LULULEMON.jpg" alt="Lululemon" class="project-image">
+                        <div class="project-info">
+                            <h3 class="project-name">Lululemon Store Fixtures</h3>
+                            <p class="project-details">Apparel display systems combining wood, metal, and composite materials. CNC programmed multi-axis operations for curved supports and floating shelf brackets matching brand aesthetic standards.</p>
+                        </div>
+                    </div>
+
+                    <div class="project-item">
+                        <img src="images/WAM_LA_SENZA.jpg" alt="La Senza" class="project-image">
+                        <div class="project-info">
+                            <h3 class="project-name">La Senza Store Fixtures</h3>
+                            <p class="project-details">Intimate apparel retail fixtures featuring premium finishes and custom hardware integration. Programmed precision CNC operations for decorative panels and display components maintaining brand identity across multiple locations.</p>
+                        </div>
+                    </div>
+
+                    <div class="project-item">
+                        <img src="images/WAM_VICTORIA_SECRET.jpg" alt="Victoria's Secret" class="project-image">
+                        <div class="project-info">
+                            <h3 class="project-name">Victoria's Secret Retail Installation</h3>
+                            <p class="project-details">Luxury retail environment featuring custom millwork and metal trim. Programmed high-speed finishing operations achieving mirror-like surface finishes on visible metal components.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h4>Manufacturing Excellence</h4>
+                    <p>Established CNC programming standards for retail fixture production ensuring consistency across multiple store rollouts. Reduced setup times by 40% through standardized work-holding solutions and optimized tool libraries. Implemented quality control checkpoints in CNC programs preventing downstream rework and ensuring first-article approval rates exceeding 95%.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Lauer Machine & Manufacturing Section -->
+        <section class="company-section">
+            <div class="container">
+                <div class="company-header">
+                    <h2 class="company-name">Lauer Machine & Manufacturing</h2>
+                    <p class="company-role">Manufacturing Process Engineer</p>
+                    <p class="company-description">Specialized in developing manufacturing processes and CNC programs for manifolds used in plastic injection molding applications requiring absolute precision with zero tolerance for error. These components had already passed through extensive value chains, demanding error-free machining processes for thousands of features including complex cooling channels, ejector pin holes, and gate locations. Optimized toolpaths and process parameters to ensure consistent quality and dimensional accuracy.</p>
+                </div>
+
+                <div class="project-gallery">
+                    <div class="project-item">
+                        <img src="images/Manifold.JPG" alt="Injection Mold Manifold" class="project-image">
+                        <div class="project-info">
+                            <h3 class="project-name">Hot Runner Manifold Systems</h3>
+                            <p class="project-details">Multi-cavity manifolds with thousands of precisely positioned features including cooling channels, heater pockets, thermocouple holes, and nozzle bores. Utilized Mastercam automation tools for rapid feature recognition and reliable toolpath generation.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h4>Precision Programming Methodology</h4>
+                    <p>Developed systematic CNC programming workflows for manifold machining leveraging Mastercam's automation capabilities to process thousands of features quickly and reliably. Implemented feature-based programming templates enabling rapid program generation while maintaining strict positional tolerances (±0.0005") critical for proper mold function. Created comprehensive tool libraries and cutting strategies optimized for manifold materials (H13 tool steel, beryllium copper, aluminum) ensuring consistent surface finishes and dimensional accuracy. Zero-error tolerance required meticulous simulation and verification protocols preventing costly scrapped parts in late-stage production.</p>
+                </div>
+
+                <ul class="features-list">
+                    <li>Feature-based programming templates for rapid manifold program generation</li>
+                    <li>Automated hole recognition and drilling cycle optimization for 1000+ features per part</li>
+                    <li>Custom post-processors ensuring reliable G-code output for critical operations</li>
+                    <li>Comprehensive simulation protocols validating collision-free toolpaths</li>
+                    <li>Optimized cutting strategies for difficult-to-machine manifold alloys</li>
+                    <li>Quality assurance checkpoints integrated into CNC programs</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Applied Modern System Integration Section -->
+        <section class="company-section">
+            <div class="container">
+                <div class="company-header">
+                    <h2 class="company-name">Applied Modern System Integration (AMSI)</h2>
+                    <p class="company-role">Mechanical Designer</p>
+                    <p class="company-description">Designed components and assemblies for modular container-based systems and portable infrastructure solutions. Created detailed CAD models and manufacturing drawings with focus on designing for assembly, incorporating standardized connections, interchangeable components, and efficient production workflows enabling rapid deployment of modular facilities.</p>
+                </div>
+
+                <div class="project-gallery">
+                    <div class="project-item">
+                        <img src="images/AMSI_1.JPG" alt="Modular Container System Interior" class="project-image">
+                        <div class="project-info">
+                            <h3 class="project-name">Modular Container Systems - Interior</h3>
+                            <p class="project-details">Interior structural components and panel systems for containerized facilities featuring standardized mounting interfaces and rapid assembly hardware.</p>
+                        </div>
+                    </div>
+
+                    <div class="project-item">
+                        <img src="images/AMSI_2.JPG" alt="Modular Container System Exterior" class="project-image">
+                        <div class="project-info">
+                            <h3 class="project-name">Modular Container Systems - Exterior</h3>
+                            <p class="project-details">Exterior cladding and structural framework components designed for weather resistance and modular expandability through standardized connection points.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h4>DFMA Implementation</h4>
+                    <p>Applied Design for Manufacturing and Assembly (DFMA) principles throughout CNC programming workflow. Standardized hole patterns and fastener locations across component families reducing unique features by 60% and enabling interchangeable parts inventory. Programmed self-locating features and alignment pins facilitating rapid field assembly without specialized tooling. Optimized nesting strategies maximizing material utilization and reducing waste by 35% in sheet metal cutting operations.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Limosa Section -->
+        <section class="company-section">
+            <div class="container">
+                <div class="company-header">
+                    <h2 class="company-name">Limosa Inc.</h2>
+                    <p class="company-role">Structural Researcher, Designer and Analyst</p>
+                    <p class="company-description">Conducted structural research, design, and analysis for electric vertical takeoff and landing (eVTOL) aircraft. Designed flap actuation mechanisms with focus on structural integrity and aerodynamic performance, performed experimental testing and validation, and applied structural analysis principles to novel aircraft configurations requiring lightweight yet robust mechanical systems.</p>
+                </div>
+
+                <div class="project-gallery">
+                    <div class="project-item">
+                        <img src="images/LIMOSA_1.png" alt="Limosa eVTOL Aircraft" class="project-image">
+                        <div class="project-info">
+                            <h3 class="project-name">eVTOL Aircraft Development</h3>
+                            <p class="project-details">Next-generation electric vertical takeoff and landing aircraft featuring distributed electric propulsion and advanced flight control surfaces. Contributed to mechanical system design and testing.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="section-title" style="margin-top: 50px; font-size: 24px;">Flap Mechanism Design & Testing</h3>
+                
+                <div class="video-container">
+                    <video controls preload="auto" playsinline style="width: 100%; border-radius: 8px;">
+                        <source src="images/LIMOSA_FLAP_MECHANISM.mp4" type="video/mp4">
+                        <p style="color: #ff6b6b; padding: 20px; text-align: center;">
+                            Video cannot be displayed. Please ensure <strong>LIMOSA_FLAP_MECHANISM.mp4</strong> (2.4 MB) is in your <strong>images/</strong> folder.
+                        </p>
+                    </video>
+                </div>
+
+                <div class="highlight-box">
+                    <h4>Engineering Contributions</h4>
+                    <p>Designed flap actuation mechanism for control surface deflection on eVTOL aircraft. Conducted kinematic analysis to optimize linkage geometry ensuring required flap angles while minimizing actuator loads. Performed experimental testing validating mechanism performance under aerodynamic loading conditions. Applied aerospace design principles including load path analysis, factor of safety calculations, and failure mode identification. Collaborated with multidisciplinary team integrating mechanical systems with electrical propulsion and flight control architectures.</p>
+                </div>
+
+                <ul class="features-list">
+                    <li>Flap mechanism kinematic design and optimization for required deflection angles</li>
+                    <li>Load path analysis ensuring structural integrity under flight conditions</li>
+                    <li>Experimental test setup design and data acquisition for mechanism validation</li>
+                    <li>CAD modeling and assembly design for integration with aircraft structure</li>
+                    <li>Collaboration with flight controls team on actuation requirements</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container">
+                <h2 class="section-title">Core Competencies</h2>
+                
+                <div class="highlight-box">
+                    <h4>CNC Programming Excellence</h4>
+                    <p>Expert-level proficiency in Mastercam for 3-axis, 4-axis, and 5-axis CNC programming. Specialized in toolpath optimization strategies balancing cycle time reduction with surface finish requirements. Advanced understanding of cutting tool geometry, feeds and speeds optimization, and chip evacuation strategies for various materials including aluminum, steel, stainless steel, exotic alloys, and composites.</p>
+                </div>
+
+                <div class="highlight-box">
+                    <h4>Design for Manufacturing & Assembly (DFMA)</h4>
+                    <p>Systematic application of DFMA principles reducing part count, simplifying assembly operations, and eliminating unnecessary features. Collaborative design reviews with engineering teams identifying manufacturability concerns early in product development. Cost-benefit analysis of design alternatives balancing performance requirements with production economics.</p>
+                </div>
+
+                <div class="highlight-box">
+                    <h4>Manufacturing Process Optimization</h4>
+                    <p>Continuous improvement mindset identifying bottlenecks in production workflows and implementing solutions. Data-driven decision making using cycle time analysis, scrap rate tracking, and first-pass yield metrics. Cross-functional collaboration with quality assurance, production planning, and maintenance teams ensuring smooth manufacturing operations.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Montee Oluwole. Engineering Portfolio.</p>
+        </div>
+    </footer>
+    <script>
+        // Page loader
+        window.addEventListener("load", function() {
+            const loader = document.querySelector(".page-loader");
+            setTimeout(() => {
+                loader.classList.add("hidden");
+            }, 500);
+        });
+
+        // Scroll progress indicator
+        window.addEventListener("scroll", function() {
+            const scrollProgress = document.querySelector(".scroll-progress");
+            const windowHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (window.scrollY / windowHeight) * 100;
+            scrollProgress.style.width = scrolled + "%";
+        });
+
+        // Scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: "0px 0px -100px 0px"
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add("visible");
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll(".scroll-fade").forEach(el => observer.observe(el));
+    </script>
+</body>
+</html>

@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PID Controller-Based Semi-Active Suspension - Montee Oluwole</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="alternate icon" href="favicon.ico">
+    <link rel="apple-touch-icon" href="favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=JetBrains+Mono:wght@300;400;500&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0a0e27;
+            --secondary: #1a1f3a;
+            --accent: #00d4ff;
+            --accent-glow: rgba(0, 212, 255, 0.4);
+            --copper: #c87533;
+            --text: #e4e6eb;
+            --text-dim: #9ba3af;
+            --grid: rgba(0, 212, 255, 0.08);
+            --transition: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Loading Animation */
+        .page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            transition: opacity 0.5s, visibility 0.5s;
+        }
+
+        .page-loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loader-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(0, 212, 255, 0.2);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Scroll Progress Indicator */
+        .scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--copper));
+            z-index: 9999;
+            transition: width 0.1s ease;
+        }
+
+        /* Scroll Fade Animations */
+        .scroll-fade {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: opacity 0.8s var(--transition), transform 0.8s var(--transition);
+        }
+
+        .scroll-fade.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+
+        body {
+            font-family: 'Manrope', sans-serif;
+            background: var(--primary);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .background-grid {
+
+        @keyframes gridPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+            position: fixed;
+
+            top: 0;
+
+            left: 0;
+
+            width: 100%;
+
+            height: 100%;
+
+            background-image: 
+
+                linear-gradient(var(--grid) 1px, transparent 1px),
+
+                linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+
+            background-size: 40px 40px;
+
+            pointer-events: none;
+
+            z-index: 0;
+
+            opacity: 1;
+
+            animation: gridPulse 20s ease-in-out infinite;
+
+        }
+
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 40px;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            padding: 40px 0;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--accent);
+            text-decoration: none;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 2px;
+            transition: all 0.3s var(--transition);
+        }
+
+        .back-link:hover {
+            gap: 15px;
+            color: var(--text);
+        }
+
+        .hero {
+            padding: 80px 0 60px;
+            text-align: center;
+        }
+
+        .project-tag {
+            display: inline-block;
+            color: var(--copper);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            margin-bottom: 20px;
+            padding: 8px 20px;
+            border: 1px solid var(--copper);
+            border-radius: 4px;
+        }
+
+        .hero-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 48px;
+            font-weight: 900;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, var(--text), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 20px;
+            color: var(--text-dim);
+            max-width: 900px;
+            margin: 0 auto 30px;
+            line-height: 1.8;
+        }
+
+        .course-info {
+            display: inline-block;
+            color: var(--accent);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: rgba(0, 212, 255, 0.1);
+            border-radius: 6px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin: 60px 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(200, 117, 51, 0.1));
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s var(--transition);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
+        }
+
+        .stat-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 36px;
+            font-weight: 900;
+            color: var(--accent);
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: var(--text-dim);
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .content-section {
+            margin: 80px 0;
+        }
+
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--accent);
+        }
+
+        .section-text {
+            color: var(--text-dim);
+            font-size: 18px;
+            line-height: 1.8;
+            margin-bottom: 30px;
+        }
+
+        .image-container {
+            margin: 40px 0;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .image-container img {
+            width: 100%;
+            display: block;
+        }
+
+        .image-caption {
+            padding: 20px;
+            color: var(--text-dim);
+            font-size: 14px;
+            font-style: italic;
+            text-align: center;
+            background: rgba(0, 212, 255, 0.05);
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(200, 117, 51, 0.1));
+            border-left: 4px solid var(--copper);
+            padding: 30px;
+            margin: 30px 0;
+            border-radius: 8px;
+        }
+
+        .highlight-box h4 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--copper);
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .highlight-box p {
+            color: var(--text-dim);
+            line-height: 1.8;
+        }
+
+        .features-list {
+            list-style: none;
+            margin: 20px 0;
+        }
+
+        .features-list li {
+            padding: 12px 0;
+            padding-left: 30px;
+            position: relative;
+            color: var(--text);
+            border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+        }
+
+        .features-list li:before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+            font-size: 18px;
+        }
+
+        .features-list li:last-child {
+            border-bottom: none;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .comparison-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 12px;
+            padding: 30px;
+            transition: all 0.3s var(--transition);
+        }
+
+        .comparison-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.2);
+        }
+
+        .comparison-card h4 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--accent);
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .comparison-card p {
+            color: var(--text-dim);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .results-table {
+            width: 100%;
+            margin: 30px 0;
+            border-collapse: collapse;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .results-table th {
+            background: rgba(0, 212, 255, 0.1);
+            color: var(--accent);
+            padding: 15px;
+            text-align: left;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .results-table td {
+            padding: 15px;
+            color: var(--text-dim);
+            border-top: 1px solid rgba(0, 212, 255, 0.1);
+        }
+
+        .results-table tr:hover {
+            background: rgba(0, 212, 255, 0.05);
+        }
+
+        footer {
+            padding: 60px 0;
+            margin-top: 120px;
+            border-top: 1px solid rgba(0, 212, 255, 0.2);
+            text-align: center;
+        }
+
+        footer p {
+            color: var(--text-dim);
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 32px;
+            }
+
+            .section-title {
+                font-size: 24px;
+            }
+
+            .container {
+                padding: 0 20px;
+            }
+
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Animation -->
+    <div class="page-loader">
+        <div class="loader-spinner"></div>
+    </div>
+    
+    <!-- Scroll Progress Bar -->
+    <div class="scroll-progress"></div>
+    <div class="background-grid"></div>
+
+    <header>
+        <div class="container">
+            <nav>
+                <a href="index.html" class="back-link">
+                    <span>←</span>
+                    <span>BACK TO HOME</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <div class="project-tag">ACADEMIC PROJECT</div>
+                <h1 class="hero-title">PID Controller-Based Semi-Active Suspension System</h1>
+                <p class="hero-subtitle">Design and simulation of an optimized PID controller for a quarter-car semi-active suspension system in MATLAB/Simulink, improving ride comfort and vehicle stability across multiple road disturbance profiles through systematic parameter tuning.</p>
+                <div class="course-info">MECH 6021 - Control System Design | Concordia University | Grade: A+</div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">3</div>
+                        <div class="stat-label">Road Profiles Tested</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">PID</div>
+                        <div class="stat-label">Control Strategy</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">MATLAB</div>
+                        <div class="stat-label">Simulation Platform</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">2 DOF</div>
+                        <div class="stat-label">Quarter Car Model</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container">
+                <h2 class="section-title">Project Overview</h2>
+                <p class="section-text">Vehicle suspension systems serve three critical functions: adapting to road disturbances for passenger comfort, maximizing tire road grip, and providing steering stability. This project focuses on designing and optimizing a PID (Proportional-Integral-Derivative) controller for a semi-active suspension system, which offers superior performance compared to passive systems while being more cost-effective and energy-efficient than fully active systems.</p>
+
+                <div class="highlight-box">
+                    <h4>Key Objective</h4>
+                    <p>Design a PID controller for a semi-active suspension system that minimizes settling time and percent overshoot across different road conditions, improving upon the performance of conventional passive suspension systems through systematic parameter tuning and performance analysis.</p>
+                </div>
+
+                <div class="image-container">
+                    <img src="images/CONTROL_SUSPENSION_MODEL.JPG" alt="Suspension System Types">
+                    <div class="image-caption">Comparison of suspension system architectures: (a) Passive system with fixed damping, (b) Semi-active system with variable damper, (c) Active system with force actuator</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container">
+                <h2 class="section-title">Suspension System Comparison</h2>
+                
+                <div class="comparison-grid">
+                    <div class="comparison-card">
+                        <h4>Passive Suspension</h4>
+                        <p><strong>Characteristics:</strong> Fixed spring stiffness and constant damping coefficient designed for specific operating conditions.</p>
+                        <p><strong>Limitations:</strong> Cannot adapt to varying road conditions or vehicle loading, resulting in compromised performance across different scenarios.</p>
+                        <p><strong>Advantages:</strong> Simple, reliable, low cost, no energy consumption.</p>
+                    </div>
+
+                    <div class="comparison-card">
+                        <h4>Semi-Active Suspension</h4>
+                        <p><strong>Characteristics:</strong> Variable damping coefficient adjusted in real-time through electronic control without adding external energy.</p>
+                        <p><strong>Benefits:</strong> Superior ride comfort compared to passive systems, significantly lower energy consumption and cost than active systems.</p>
+                        <p><strong>Application:</strong> Commonly found in modern commercial vehicles due to optimal cost-performance balance.</p>
+                    </div>
+
+                    <div class="comparison-card">
+                        <h4>Active Suspension</h4>
+                        <p><strong>Characteristics:</strong> Force actuators providing dynamic control across wide frequency ranges with external power input.</p>
+                        <p><strong>Performance:</strong> Best adaptation to road disturbances and superior ride quality.</p>
+                        <p><strong>Drawbacks:</strong> High complexity, significant energy consumption, increased vehicle weight, and substantially higher cost.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container">
+                <h2 class="section-title">Mathematical Modeling</h2>
+                <p class="section-text">A quarter-car model with two degrees of freedom (sprung mass and unsprung mass) was developed to analyze suspension performance. Newton's second law was applied to derive state-space equations for both passive and semi-active configurations, with key assumptions including negligible roll and pitch motions, longitudinal axis symmetry, and tire damping and spring properties.</p>
+
+                <div class="highlight-box">
+                    <h4>Model Parameters</h4>
+                    <p>Sprung Mass (Ms): Vehicle body mass | Unsprung Mass (Mu): Wheel assembly mass | Spring Coefficient (Ks): Suspension stiffness | Tire Spring Coefficient (Kt): Tire stiffness | Damping Coefficient (Cs/β): Variable damper controlled by PID | Road Disturbance: Zo(t) input function</p>
+                </div>
+
+                <div class="image-container">
+                    <img src="images/CONTROL_SIMULINK.JPG" alt="MATLAB Simulink Model">
+                    <div class="image-caption">MATLAB Simulink implementation of semi-active suspension with PID controller featuring manual tuning for different road profiles</div>
+                </div>
+
+                <p class="section-text">The semi-active model replaces the fixed damper (Cs) with a variable coefficient (β) controlled by the PID feedback loop. Transfer functions were derived using Laplace transforms to establish the relationship between road disturbance input and sprung mass displacement output.</p>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container">
+                <h2 class="section-title">Road Disturbance Profiles</h2>
+                <p class="section-text">Three distinct road disturbance profiles were analyzed to evaluate controller performance across diverse driving conditions simulating real-world scenarios from smooth highways to severely damaged roads.</p>
+
+                <div class="image-container">
+                    <img src="images/CONTROL_SINUSODIAL_ROAD_DISTURBANCE.JPG" alt="Sinusoidal Road Profile">
+                    <div class="image-caption">Profile 1: Sinusoidal road disturbance representing smooth undulating road surfaces or speed bumps</div>
+                </div>
+
+                <div class="image-container">
+                    <img src="images/CONTROL_STEP_ROAD_DISTURBANCE.JPG" alt="Step Road Profile">
+                    <div class="image-caption">Profile 2: Step function disturbance simulating curb impacts or abrupt surface height changes</div>
+                </div>
+
+                <div class="image-container">
+                    <img src="images/CONTROL_CONSECUTIVE_JERKS_ROAD_DISTURBANCE.JPG" alt="Consecutive Jerks Profile">
+                    <div class="image-caption">Profile 3: Consecutive impulse jerks representing severely damaged roads with potholes and irregular surfaces</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container">
+                <h2 class="section-title">PID Controller Tuning Methodology</h2>
+                <p class="section-text">Manual tuning was performed to optimize PID parameters (Kp, Ki, Kd) for each road profile. The PID controller was implemented through manual connection rather than using Simulink's built-in block due to the nonlinear nature of the ground displacement input. Tuning focused on minimizing settling time (Ts) and percent overshoot (PO) to maximize passenger comfort.</p>
+
+                <div class="highlight-box">
+                    <h4>Tuning Strategy</h4>
+                    <p>Starting from literature-optimized baseline values, parameters were adjusted individually to observe their effects on system response. Proportional gain (Kp) adjusted response speed, integral gain (Ki) reduced steady-state error, and derivative gain (Kd) minimized overshoot and improved stability.</p>
+                </div>
+
+                <h3 class="section-title" style="font-size: 24px; margin-top: 50px;">Optimized PID Parameters</h3>
+                
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Road Profile</th>
+                            <th>Kp (Proportional)</th>
+                            <th>Ki (Integral)</th>
+                            <th>Kd (Derivative)</th>
+                            <th>Performance Improvement</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Profile 1</strong> (Sinusoidal)</td>
+                            <td>80</td>
+                            <td>12</td>
+                            <td>0.5</td>
+                            <td>Decreased mean displacement, reduced time to peak</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Profile 2</strong> (Step)</td>
+                            <td>10</td>
+                            <td>20</td>
+                            <td>0.1</td>
+                            <td>Reduced oscillation amplitude, improved settling characteristics</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Profile 3</strong> (Jerks)</td>
+                            <td>20</td>
+                            <td>8</td>
+                            <td>0.1</td>
+                            <td>Significantly decreased median displacement of sprung mass</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="highlight-box" style="margin-top: 40px;">
+                    <h4>Key Findings</h4>
+                    <p>Increasing Ki generally increased percent overshoot (undesirable for comfort), while increasing Kp improved response speed but required careful balancing. Derivative gain (Kd) effectively reduced overshoot but had minimal impact on certain road profiles. Statistical analysis confirmed improvements in settling time and time to rise for the controlled sprung mass, directly enhancing passenger comfort.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container">
+                <h2 class="section-title">Technical Implementation</h2>
+                
+                <ul class="features-list">
+                    <li>Developed quarter-car mathematical model with state-space representation</li>
+                    <li>Derived transfer functions using Laplace transforms for passive and semi-active configurations</li>
+                    <li>Implemented nonlinear control system in MATLAB/Simulink with manual PID connection</li>
+                    <li>Performed systematic parameter tuning using trial-and-error methodology</li>
+                    <li>Analyzed performance metrics: settling time, rise time, percent overshoot, steady-state error</li>
+                    <li>Conducted statistical analysis of displacement signals for comparative evaluation</li>
+                    <li>Validated improvements over passive baseline across all three road profiles</li>
+                    <li>Documented comprehensive design rationale and optimization process</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container">
+                <h2 class="section-title">Performance Criteria Analysis</h2>
+                <p class="section-text">The primary performance metrics evaluated were settling time (Ts), rise time (Tr), percent overshoot (PO), and steady-state error (ess). For optimal ride comfort, minimizing settling time and percent overshoot is critical as these directly correlate to passenger perception of suspension quality and component wear.</p>
+
+                <div class="highlight-box">
+                    <h4>Passive Suspension Baseline Results</h4>
+                    <p><strong>Profile 1:</strong> Ts = 5.2s, Tr = 7.0s, PO = 2% | <strong>Profile 2:</strong> Ts = 5.1s, Tr = 5.5s, PO = 75% | <strong>Profile 3:</strong> Ts = 8.0s, Tr = 0.8s, PO = 80%</p>
+                </div>
+
+                <p class="section-text">The semi-active system with optimized PID control demonstrated measurable improvements in settling characteristics and reduced displacement amplitude. Statistical analysis revealed decreased mean values for sprung mass displacement and improved response consistency across varying road conditions.</p>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container">
+                <h2 class="section-title">Conclusions & Impact</h2>
+                <p class="section-text">This project successfully demonstrated that semi-active suspension systems with properly tuned PID controllers offer substantial performance advantages over passive systems. Through systematic parameter optimization, improvements in settling time and rise time were achieved for the sprung mass, directly enhancing passenger comfort. The manual tuning methodology proved effective despite the nonlinear system characteristics, yielding profile-specific optimal gains that balanced response speed, stability, and steady-state accuracy.</p>
+
+                <div class="highlight-box">
+                    <h4>Future Enhancements</h4>
+                    <p>With additional development time, analytical pole-matching techniques could be explored for more systematic controller design. Adaptive control strategies enabling real-time parameter adjustment based on detected road conditions would further improve performance. Integration with vehicle sensors for preview control and machine learning optimization of PID gains represent promising research directions.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Montee Oluwole. Engineering Portfolio.</p>
+        </div>
+    </footer>
+    <script>
+        // Page loader
+        window.addEventListener("load", function() {
+            const loader = document.querySelector(".page-loader");
+            setTimeout(() => {
+                loader.classList.add("hidden");
+            }, 500);
+        });
+
+        // Scroll progress indicator
+        window.addEventListener("scroll", function() {
+            const scrollProgress = document.querySelector(".scroll-progress");
+            const windowHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (window.scrollY / windowHeight) * 100;
+            scrollProgress.style.width = scrolled + "%";
+        });
+
+        // Scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: "0px 0px -100px 0px"
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add("visible");
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll(".scroll-fade").forEach(el => observer.observe(el));
+    </script>
+</body>
+</html>

@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Montee Oluwole - Automation & Robotics Engineer</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="alternate icon" href="favicon.ico">
+    <link rel="apple-touch-icon" href="favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=JetBrains+Mono:wght@300;400;500&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0a0e27;
+            --secondary: #1a1f3a;
+            --accent: #00d4ff;
+            --accent-glow: rgba(0, 212, 255, 0.4);
+            --copper: #c87533;
+            --text: #e4e6eb;
+            --text-dim: #9ba3af;
+            --grid: rgba(0, 212, 255, 0.08);
+            --transition: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Manrope', sans-serif;
+            background: var(--primary);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Loading Animation */
+        .page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            transition: opacity 0.5s, visibility 0.5s;
+        }
+
+        .page-loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loader-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(0, 212, 255, 0.2);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Scroll Progress Indicator */
+        .scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--copper));
+            z-index: 9999;
+            transition: width 0.1s ease;
+        }
+
+        .background-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(var(--grid) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0;
+            animation: gridFadeIn 2s ease-out forwards;
+        }
+
+        @keyframes gridFadeIn {
+            to { opacity: 1; }
+        }
+
+        .glow-orb {
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--accent-glow), transparent 70%);
+            pointer-events: none;
+            z-index: 1;
+            filter: blur(80px);
+            opacity: 0.3;
+            animation: orbFloat 20s ease-in-out infinite;
+        }
+
+        .glow-orb-1 { top: -200px; left: -200px; }
+        .glow-orb-2 { bottom: -200px; right: -200px; animation-delay: -10s; }
+
+        @keyframes orbFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(50px, -50px) scale(1.1); }
+            50% { transform: translate(-30px, 50px) scale(0.9); }
+            75% { transform: translate(40px, 30px) scale(1.05); }
+        }
+
+        /* Particles Background */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: float linear infinite;
+            opacity: 0;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) translateX(100px);
+                opacity: 0;
+            }
+        }
+
+        /* Scroll Fade Animations */
+        .scroll-fade {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: opacity 0.8s var(--transition), transform 0.8s var(--transition);
+        }
+
+        .scroll-fade.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .scroll-slide-left {
+            opacity: 0;
+            transform: translateX(-50px);
+            transition: opacity 0.8s var(--transition), transform 0.8s var(--transition);
+        }
+
+        .scroll-slide-left.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .scroll-slide-right {
+            opacity: 0;
+            transform: translateX(50px);
+            transition: opacity 0.8s var(--transition), transform 0.8s var(--transition);
+        }
+
+        .scroll-slide-right.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 40px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Header */
+        header {
+            padding: 40px 0;
+            position: sticky;
+            top: 0;
+            background: rgba(10, 14, 39, 0.8);
+            backdrop-filter: blur(20px);
+            z-index: 100;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+            animation: slideDown 0.8s var(--transition);
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 28px;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--accent), var(--copper));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 2px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 40px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            transition: color 0.3s var(--transition);
+            position: relative;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent);
+            transition: width 0.3s var(--transition);
+        }
+
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .nav-links a.active {
+            color: var(--accent);
+        }
+
+        .nav-links a.active::after {
+            width: 100%;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 70vh;
+            display: flex;
+            align-items: center;
+            padding: 60px 0 30px;
+            position: relative;
+        }
+
+        .hero-content {
+            max-width: 900px;
+            opacity: 0;
+            animation: fadeInUp 1s var(--transition) 0.3s forwards;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hero-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--accent);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            display: inline-block;
+            padding: 8px 20px;
+            border: 1px solid var(--accent);
+            border-radius: 20px;
+            background: rgba(0, 212, 255, 0.05);
+        }
+
+        .hero h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 72px;
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #ffffff, var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 20px;
+            color: var(--text-dim);
+            margin-bottom: 50px;
+            line-height: 1.8;
+            max-width: 700px;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+        }
+
+        .btn {
+            padding: 16px 40px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s var(--transition);
+            display: inline-block;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: var(--primary);
+            border: 2px solid var(--accent);
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn-primary:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px var(--accent-glow);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text);
+            border: 2px solid var(--text-dim);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        /* About Section */
+        .about {
+            padding: 40px 0 40px;
+            position: relative;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 40px;
+            opacity: 0;
+            animation: fadeInUp 0.8s var(--transition) forwards;
+        }
+
+        .section-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--copper);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+        }
+
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 48px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 20px;
+        }
+
+        .about-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .about-text {
+            opacity: 0;
+            animation: fadeInUp 0.8s var(--transition) 0.2s forwards;
+        }
+
+        .about-text p {
+            font-size: 18px;
+            color: var(--text-dim);
+            margin-bottom: 20px;
+            line-height: 1.8;
+        }
+
+        .expertise-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 40px;
+        }
+
+        .expertise-item {
+            padding: 15px 20px;
+            background: rgba(0, 212, 255, 0.05);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--accent);
+            transition: all 0.3s var(--transition);
+        }
+
+        .expertise-item:hover {
+            background: rgba(0, 212, 255, 0.1);
+            transform: translateX(5px);
+            border-color: var(--accent);
+        }
+
+
+        /* Projects Section */
+        .projects {
+            padding: 30px 0 120px;
+            background: linear-gradient(180deg, var(--primary) 0%, var(--secondary) 100%);
+        }
+
+        .projects-grid {
+            display: grid;
+            gap: 40px;
+        }
+
+        .project-card {
+            background: rgba(26, 31, 58, 0.6);
+            border: 1px solid rgba(0, 212, 255, 0.1);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.5s var(--transition);
+            position: relative;
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            min-height: 350px;
+            opacity: 0;
+            animation: fadeInUp 0.8s var(--transition) forwards;
+            cursor: pointer;
+        }
+
+        .project-card:nth-child(1) { animation-delay: 0.1s; }
+        .project-card:nth-child(2) { animation-delay: 0.2s; }
+        .project-card:nth-child(3) { animation-delay: 0.3s; }
+        .project-card:nth-child(4) { animation-delay: 0.4s; }
+        .project-card:nth-child(5) { animation-delay: 0.5s; }
+
+        .project-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.5s var(--transition);
+            pointer-events: none;
+        }
+
+        .project-card:hover::before {
+            opacity: 1;
+        }
+
+        .project-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            border-color: rgba(0, 212, 255, 0.5);
+            box-shadow: 0 20px 60px rgba(0, 212, 255, 0.3), 0 0 40px rgba(0, 212, 255, 0.1);
+        }
+
+        .project-card:hover .project-icon img {
+            transform: scale(1.1) rotate(2deg);
+        }
+
+        .project-visual {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(200, 117, 51, 0.2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 80px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .project-visual::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: conic-gradient(from 0deg, transparent, rgba(0, 212, 255, 0.1), transparent);
+            animation: rotate 8s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes rotate {
+            to { transform: rotate(360deg); }
+        }
+
+        .project-icon {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .project-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            transition: transform 0.5s var(--transition);
+        }
+
+        .project-content {
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .project-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .project-number {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            color: var(--copper);
+            padding: 8px 16px;
+            background: rgba(200, 117, 51, 0.1);
+            border: 1px solid var(--copper);
+            border-radius: 20px;
+        }
+
+        .project-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 15px;
+        }
+
+        .project-title a:hover {
+            color: var(--accent);
+            transition: color 0.3s var(--transition);
+        }
+
+        .project-description {
+            font-size: 16px;
+            color: var(--text-dim);
+            line-height: 1.7;
+            margin-bottom: 25px;
+        }
+
+        .project-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tag {
+            padding: 6px 14px;
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 15px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--accent);
+            letter-spacing: 0.5px;
+        }
+
+        .project-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .project-link {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--accent);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s var(--transition);
+        }
+
+        .project-link:hover {
+            color: var(--copper);
+            transform: translateX(5px);
+        }
+
+        /* Contact Section */
+        .contact {
+            padding: 120px 0;
+            text-align: center;
+        }
+
+        .contact-content {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .contact-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 56px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, var(--accent), var(--copper));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .contact-text {
+            font-size: 20px;
+            color: var(--text-dim);
+            margin-bottom: 50px;
+            line-height: 1.8;
+        }
+
+        .contact-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .contact-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 32px;
+            background: rgba(26, 31, 58, 0.6);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 50px;
+            color: var(--text);
+            text-decoration: none;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            transition: all 0.3s var(--transition);
+        }
+
+        .contact-link:hover {
+            background: rgba(0, 212, 255, 0.1);
+            border-color: var(--accent);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.2);
+        }
+
+        /* Footer */
+        footer {
+            padding: 60px 0 40px;
+            border-top: 1px solid rgba(0, 212, 255, 0.1);
+            text-align: center;
+        }
+
+        footer p {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--text-dim);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .project-card {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+
+            .project-visual {
+                height: 250px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 20px;
+            }
+
+            .hero h1 {
+                font-size: 48px;
+            }
+
+            .section-title {
+                font-size: 36px;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .expertise-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                text-align: center;
+            }
+        }
+
+        /* Scroll animations */
+        .scroll-fade {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s var(--transition);
+        }
+
+        .scroll-fade.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Animation -->
+    <div class="page-loader">
+        <div class="loader-spinner"></div>
+    </div>
+    
+    <!-- Scroll Progress Bar -->
+    <div class="scroll-progress"></div>
+    
+    <!-- Particles Background -->
+    <div class="particles" id="particles"></div>
+    
+    <div class="background-grid"></div>
+    <div class="glow-orb glow-orb-1"></div>
+    <div class="glow-orb glow-orb-2"></div>
+
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">MONTEE OLUWOLE</div>
+                <ul class="nav-links">
+                    <li><a href="#about">ABOUT</a></li>
+                    <li><a href="#projects">PROJECTS</a></li>
+                    <li><a href="#contact">CONTACT</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <div class="hero-content">
+                    <div class="hero-label">M.ENG MECHANICAL ENGINEERING '22 • AUTOMATION • ROBOTICS • DESIGN</div>
+                    <h1>Developing Advanced Solutions in Robotics, Automation & Design</h1>
+                    <p>Expertise spans swarm robotics, sensor fusion for autonomous driving, and robotic dexterity alongside industrial applications in DFMA, CNC programming, and line form programming. Streamlining manufacturing workflows through Python automation and SolidWorks macros while advancing research in multi-agent optimization and formation control.</p>
+                    <div class="cta-buttons">
+                        <a href="#projects" class="btn btn-primary">EXPLORE PROJECTS</a>
+                        <a href="#contact" class="btn btn-secondary">GET IN TOUCH</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="about" class="about">
+            <div class="container">
+                <div class="section-header scroll-fade">
+                    <div class="section-tag">BACKGROUND</div>
+                    <h2 class="section-title">Engineering Excellence</h2>
+                </div>
+
+                <div class="about-content">
+                    <div class="about-text">
+                        <p>Automation and Robotics Engineer with a Master of Engineering in Mechanical Engineering from Concordia University (2022). Passionate about advancing the intersection of intelligent systems and practical engineering, with expertise spanning multi-agent coordination, sensor fusion, advanced control algorithms, and manufacturing automation.</p>
+                        
+                        <p>Currently seeking PhD opportunities to deepen research in intelligent systems and robotics while developing automation solutions at WAM Industries and Maxxit Group. Creating Python tools and SolidWorks API workflows that streamline manufacturing processes, demonstrating a commitment to bridging cutting-edge research with real-world engineering impact.</p>
+
+                        <div class="expertise-grid">
+                            <div class="expertise-item">Control Systems</div>
+                            <div class="expertise-item">Python / MATLAB</div>
+                            <div class="expertise-item">ROS / PyBullet</div>
+                            <div class="expertise-item">Sensor Fusion</div>
+                            <div class="expertise-item">Optimization</div>
+                            <div class="expertise-item">SolidWorks API</div>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Personal Projects Section -->
+        <section id="projects" class="projects">
+            <div class="container">
+                <div class="section-header scroll-fade">
+                    <div class="section-tag">PERSONAL PROJECTS</div>
+                    <h2 class="section-title">Independent Research & Development</h2>
+                </div>
+
+                <div class="projects-grid">
+                    <div class="project-card">
+                        <div class="project-visual">
+                            <div class="project-icon"><img src="images/SwarmDroneTab.jpg" alt="Swarm Drones"></div>
+                        </div>
+                        <div class="project-content">
+                            <div class="project-header">
+                                <span class="project-number">01</span>
+                            </div>
+                            <h3 class="project-title"><a href="swarm-drones.html" style="color: inherit; text-decoration: none;">Swarm Drones Simulation</a></h3>
+                            <p class="project-description">Comprehensive platform for 20 quadrotor agents forming complex 3D patterns (helix, mandala, dragon, Canadian flag). Features energy optimization, collision avoidance with proximity-based decay, and real-time safety monitoring with contingency reserves.</p>
+                            <div class="project-tags">
+                                <span class="tag">PyBullet</span>
+                                <span class="tag">Formation Control</span>
+                                <span class="tag">SciPy Optimize</span>
+                                <span class="tag">Multi-Agent</span>
+                                <span class="tag">Real-Time Visualization</span>
+                            </div>
+                            <div class="project-links">
+                                <a href="swarm-drones.html" class="project-link">VIEW DETAILS →</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="project-card">
+                        <div class="project-visual">
+                            <div class="project-icon"><img src="images/TabImageSelfDriving.JPG" alt="Autonomous Driving"></div>
+                        </div>
+                        <div class="project-content">
+                            <div class="project-header">
+                                <span class="project-number">02</span>
+                            </div>
+                            <h3 class="project-title"><a href="sensor-fusion.html" style="color: inherit; text-decoration: none;">Sensor Fusion for Autonomous Driving</a></h3>
+                            <p class="project-description">Multi-sensor 3D object tracking using camera-LiDAR fusion with Extended Kalman Filter and Interacting Multiple Models. Achieved 78.4% MOTA on KITTI benchmark with 0.42m position error and 92% track retention through 5+ second occlusions.</p>
+                            <div class="project-tags">
+                                <span class="tag">EKF</span>
+                                <span class="tag">IMM</span>
+                                <span class="tag">KITTI Dataset</span>
+                                <span class="tag">Camera-LiDAR</span>
+                                <span class="tag">3D Tracking</span>
+                            </div>
+                            <div class="project-links">
+                                <a href="sensor-fusion.html" class="project-link">VIEW DETAILS →</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="project-card">
+                        <div class="project-visual">
+                            <div class="project-icon"><img src="images/Hand_3.JPG" alt="Robotic Hand"></div>
+                        </div>
+                        <div class="project-content">
+                            <div class="project-header">
+                                <span class="project-number">03</span>
+                            </div>
+                            <h3 class="project-title"><a href="multi-sensor-grasping.html" style="color: inherit; text-decoration: none;">Multi-Sensor Demonstration Refinement for Robotic Grasping</a></h3>
+                            <p class="project-description">Learning from demonstration system using somatosensory glove teleoperation. Multi-sensor analysis (touch, accelerometer, ultrasonic, camera) identifies success patterns and refines trajectories for ≥25% improvement in grasp success rate.</p>
+                            <div class="project-tags">
+                                <span class="tag">ROS Noetic</span>
+                                <span class="tag">Arduino</span>
+                                <span class="tag">Learning from Demo</span>
+                                <span class="tag">Sensor Fusion</span>
+                            </div>
+                            <div class="project-links">
+                                <a href="multi-sensor-grasping.html" class="project-link">VIEW DETAILS →</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="project-card">
+                        <div class="project-visual">
+                            <div class="project-icon"><img src="images/Laminate_Tab.jpeg" alt="Composite Laminate"></div>
+                        </div>
+                        <div class="project-content">
+                            <div class="project-header">
+                                <span class="project-number">04</span>
+                            </div>
+                            <h3 class="project-title"><a href="laminate-optimization.html" style="color: inherit; text-decoration: none;">Laminate Optimization</a></h3>
+                            <p class="project-description">Advanced optimization framework for composite material design using Python. Implements Monte Carlo search and classical lamination theory for optimal fiber orientation and stacking sequences. Achieved 13.43 kg total mass across 4 fuselage bays with positive margins of safety.</p>
+                            <div class="project-tags">
+                                <span class="tag">Python</span>
+                                <span class="tag">CLT</span>
+                                <span class="tag">Tsai-Wu Criterion</span>
+                                <span class="tag">Composite Optimization</span>
+                            </div>
+                            <div class="project-links">
+                                <a href="laminate-optimization.html" class="project-link">VIEW DETAILS →</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Professional Projects Section -->
+        <section class="projects" style="background: linear-gradient(180deg, var(--secondary) 0%, var(--primary) 100%);">
+            <div class="container">
+                <div class="section-header scroll-fade">
+                    <div class="section-tag">PROFESSIONAL PROJECTS</div>
+                    <h2 class="section-title">Industry Experience</h2>
+                    <p style="color: var(--text-dim); font-size: 18px; max-width: 800px; margin: 20px auto 0; text-align: center;">Automation solutions and manufacturing optimization at WAM Industries and Maxxit Group</p>
+                </div>
+
+                <div class="projects-grid">
+                    <div class="project-card">
+                        <div class="project-visual">
+                            <div class="project-icon"><img src="images/SOLIDWORKS_AUTOMATION.jpg" alt="SolidWorks Automation"></div>
+                        </div>
+                        <div class="project-content">
+                            <div class="project-header">
+                                <span class="project-number">01</span>
+                            </div>
+                            <h3 class="project-title"><a href="solidworks-automation.html" style="color: inherit; text-decoration: none;">SolidWorks API & VBA Automation</a></h3>
+                            <p class="project-description">Developed comprehensive VBA macros for SolidWorks automation including DXF/DWG export systems, PDF generation, and manufacturing workflow optimization. Created sheet metal export macros with bend line detection and direction analysis capabilities.</p>
+                            <div class="project-tags">
+                                <span class="tag">SolidWorks API</span>
+                                <span class="tag">VBA</span>
+                                <span class="tag">Manufacturing</span>
+                                <span class="tag">CAD Automation</span>
+                            </div>
+                            <div class="project-links">
+                                <a href="solidworks-automation.html" class="project-link">VIEW DETAILS →</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="project-card">
+                        <div class="project-visual">
+                            <div class="project-icon"><img src="images/PYTHON_SOLIDWORKS.jpg" alt="Python Engineering"></div>
+                        </div>
+                        <div class="project-content">
+                            <div class="project-header">
+                                <span class="project-number">02</span>
+                            </div>
+                            <h3 class="project-title"><a href="python-tools.html" style="color: inherit; text-decoration: none;">Python Engineering Tools</a></h3>
+                            <p class="project-description">Developed custom Python applications for manufacturing workflow optimization. Created DXF layer filter for CNC toolpaths, bounding box measurement system for dimensional verification, and designed Python-SolidWorks API integration framework for automated drawing generation.</p>
+                            <div class="project-tags">
+                                <span class="tag">Python</span>
+                                <span class="tag">DXF Processing</span>
+                                <span class="tag">SolidWorks API</span>
+                                <span class="tag">Automation</span>
+                            </div>
+                            <div class="project-links">
+                                <a href="python-tools.html" class="project-link">VIEW DETAILS →</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="project-card">
+                        <div class="project-visual">
+                            <div class="project-icon"><img src="images/CNC.jpeg" alt="CNC Machining"></div>
+                        </div>
+                        <div class="project-content">
+                            <div class="project-header">
+                                <span class="project-number">03</span>
+                            </div>
+                            <h3 class="project-title"><a href="cnc-dfma.html" style="color: inherit; text-decoration: none;">CNC Programming & DFMA</a></h3>
+                            <p class="project-description">Comprehensive manufacturing engineering across aerospace (Limosa), architectural metalwork (Maxxit), retail fixtures (WAM), precision tooling (Lauer), and modular systems (AMSI). Specialized in advanced CNC programming, DFMA principles, and toolpath optimization for complex projects requiring ±0.001" tolerances.</p>
+                            <div class="project-tags">
+                                <span class="tag">Mastercam</span>
+                                <span class="tag">5-Axis CNC</span>
+                                <span class="tag">DFMA</span>
+                                <span class="tag">Toolpath Optimization</span>
+                            </div>
+                            <div class="project-links">
+                                <a href="cnc-dfma.html" class="project-link">VIEW DETAILS →</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Academic Projects Section -->
+        <section class="projects" style="background: linear-gradient(180deg, var(--primary) 0%, var(--secondary) 100%);">
+            <div class="container">
+                <div class="section-header scroll-fade">
+                    <div class="section-tag">ACADEMIC PROJECTS</div>
+                    <h2 class="section-title">M.Eng Mechanical Engineering</h2>
+                    <p style="color: var(--text-dim); font-size: 18px; max-width: 800px; margin: 20px auto 0; text-align: center;">Concordia University, 2022</p>
+                </div>
+
+                <div class="projects-grid">
+                    <div class="project-card">
+                        <div class="project-visual">
+                            <div class="project-icon"><img src="images/SUSPENSION_TAB.jpg" alt="Suspension System"></div>
+                        </div>
+                        <div class="project-content">
+                            <div class="project-header">
+                                <span class="project-number">01</span>
+                            </div>
+                            <h3 class="project-title"><a href="pid-suspension.html" style="color: inherit; text-decoration: none;">PID Controller-Based Semi-Active Suspension System</a></h3>
+                            <p class="project-description">Designed and optimized PID controller for quarter-car semi-active suspension system using MATLAB/Simulink. Achieved improved ride comfort through manual tuning analysis across three road disturbance profiles, demonstrating advantages over passive suspension systems.</p>
+                            <div class="project-tags">
+                                <span class="tag">Control Systems</span>
+                                <span class="tag">PID Tuning</span>
+                                <span class="tag">MATLAB/Simulink</span>
+                                <span class="tag">Vehicle Dynamics</span>
+                            </div>
+                            <div class="project-links">
+                                <a href="pid-suspension.html" class="project-link">VIEW DETAILS →</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="project-card">
+                        <div class="project-visual">
+                            <div class="project-icon"><img src="images/FLUTTER.gif" alt="Wing Flutter"></div>
+                        </div>
+                        <div class="project-content">
+                            <div class="project-header">
+                                <span class="project-number">02</span>
+                            </div>
+                            <h3 class="project-title"><a href="flutter-analysis.html" style="color: inherit; text-decoration: none;">Aeroelasticity Analysis: Flutter</a></h3>
+                            <p class="project-description">Performed comprehensive flutter analysis for aircraft wing structures using P-method and PK-method in MATLAB. Evaluated stability boundaries, frequency responses, and damping characteristics under varying flight conditions and structural parameters.</p>
+                            <div class="project-tags">
+                                <span class="tag">Aeroelasticity</span>
+                                <span class="tag">Flutter Analysis</span>
+                                <span class="tag">MATLAB</span>
+                                <span class="tag">Aerospace</span>
+                            </div>
+                            <div class="project-links">
+                                <a href="flutter-analysis.html" class="project-link">VIEW DETAILS →</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact" class="contact">
+            <div class="container">
+                <div class="contact-content scroll-fade">
+                    <h2 class="contact-title">Let's Connect</h2>
+                    <p class="contact-text">Interested in collaboration, research opportunities, or discussing robotics and autonomous systems? I'm always open to connecting with fellow engineers and researchers.</p>
+                    
+                    <div class="contact-links">
+                        <a href="mailto:motunrayooluwole@gmail.com" class="contact-link">
+                            
+                            <span>EMAIL</span>
+                        </a>
+                        <a href="https://github.com/DevMontee" class="contact-link" target="_blank">
+                            
+                            <span>GITHUB</span>
+                        </a>
+                        <a href="https://www.linkedin.com/in/montee-oluwole-26164bb3/" class="contact-link" target="_blank">
+                            
+                            <span>LINKEDIN</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 Montee Oluwole • M.Eng Mechanical Engineering • Automation & Robotics Engineer</p>
+        </div>
+    </footer>
+
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // Scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.scroll-fade').forEach(el => observer.observe(el));
+
+        // Make entire project cards clickable
+        document.querySelectorAll('.project-card').forEach(card => {
+            card.addEventListener('click', function(e) {
+                // Don't navigate if clicking on a link directly
+                if (e.target.tagName === 'A') return;
+                
+                // Find the first link in the card and navigate to it
+                const link = card.querySelector('.project-link, .project-title a');
+                if (link) {
+                    window.location.href = link.href;
+                }
+            });
+        });
+
+        // Page loader
+        window.addEventListener('load', function() {
+            const loader = document.querySelector('.page-loader');
+            setTimeout(() => {
+                loader.classList.add('hidden');
+            }, 500);
+        });
+
+        // Scroll progress indicator
+        window.addEventListener('scroll', function() {
+            const scrollProgress = document.querySelector('.scroll-progress');
+            const windowHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (window.scrollY / windowHeight) * 100;
+            scrollProgress.style.width = scrolled + '%';
+        });
+
+        // Create particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 50;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                // Random starting position
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                
+                // Random animation duration
+                particle.style.animationDuration = (Math.random() * 20 + 10) + 's';
+                
+                // Random delay
+                particle.style.animationDelay = Math.random() * 5 + 's';
+                
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        createParticles();
+
+        // Active navigation state
+        const sections = document.querySelectorAll('section[id]');
+        const navLinks = document.querySelectorAll('.nav-links a');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (scrollY >= (sectionTop - 200)) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').includes(current)) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        // Scroll animations for left and right slides
+        const leftObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        const rightObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.scroll-slide-left').forEach(el => leftObserver.observe(el));
+        document.querySelectorAll('.scroll-slide-right').forEach(el => rightObserver.observe(el));
+
+        // Counter animation for stats (if any)
+        function animateCounter(element, target, duration = 2000) {
+            const start = 0;
+            const increment = target / (duration / 16);
+            let current = start;
+
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    element.textContent = target;
+                    clearInterval(timer);
+                } else {
+                    element.textContent = Math.floor(current);
+                }
+            }, 16);
+        }
+
+        // Observe stat numbers and animate when in view
+        const statsObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const value = entry.target.getAttribute('data-value');
+                    if (value && !entry.target.classList.contains('counted')) {
+                        animateCounter(entry.target, parseInt(value));
+                        entry.target.classList.add('counted');
+                    }
+                }
+            });
+        }, { threshold: 0.5 });
+
+        document.querySelectorAll('[data-value]').forEach(el => statsObserver.observe(el));
+    </script>
+</body>
+</html>
