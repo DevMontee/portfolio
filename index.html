@@ -19,6 +19,7 @@
             --text-dim: #9ba3af;
             --grid: rgba(0, 212, 255, 0.08);
             --transition: cubic-bezier(0.4, 0, 0.2, 1);
+            --sidenav-width: 280px;
         }
 
         * {
@@ -76,19 +77,25 @@
         .scroll-progress {
             position: fixed;
             top: 0;
-            left: 0;
-            width: 0%;
+            left: var(--sidenav-width);
+            width: calc(100% - var(--sidenav-width));
             height: 3px;
-            background: linear-gradient(90deg, var(--accent), var(--copper));
+            background: rgba(0, 212, 255, 0.1);
             z-index: 9999;
+        }
+
+        .scroll-progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent), var(--copper));
             transition: width 0.1s ease;
         }
 
         .background-grid {
             position: fixed;
             top: 0;
-            left: 0;
-            width: 100%;
+            left: var(--sidenav-width);
+            width: calc(100% - var(--sidenav-width));
             height: 100%;
             background-image: 
                 linear-gradient(var(--grid) 1px, transparent 1px),
@@ -117,7 +124,7 @@
             animation: orbFloat 20s ease-in-out infinite;
         }
 
-        .glow-orb-1 { top: -200px; left: -200px; }
+        .glow-orb-1 { top: -200px; left: calc(var(--sidenav-width) - 200px); }
         .glow-orb-2 { bottom: -200px; right: -200px; animation-delay: -10s; }
 
         @keyframes orbFloat {
@@ -131,8 +138,8 @@
         .particles {
             position: fixed;
             top: 0;
-            left: 0;
-            width: 100%;
+            left: var(--sidenav-width);
+            width: calc(100% - var(--sidenav-width));
             height: 100%;
             pointer-events: none;
             z-index: 1;
@@ -163,6 +170,181 @@
                 transform: translateY(-100px) translateX(100px);
                 opacity: 0;
             }
+        }
+
+        /* Permanent Side Navigation */
+        .side-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: var(--sidenav-width);
+            height: 100vh;
+            background: rgba(10, 14, 39, 0.98);
+            border-right: 1px solid rgba(0, 212, 255, 0.15);
+            z-index: 1000;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .side-nav-header {
+            padding: 30px 20px 25px;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+        }
+
+        .side-nav-logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 16px;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--accent), var(--copper));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 1px;
+            line-height: 1.3;
+        }
+
+        .side-nav-subtitle {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: var(--text-dim);
+            letter-spacing: 1px;
+            margin-top: 8px;
+            text-transform: uppercase;
+        }
+
+        .side-nav-content {
+            padding: 15px 0;
+        }
+
+        .nav-section {
+            margin-bottom: 5px;
+        }
+
+        .nav-section-header {
+            display: flex;
+            align-items: center;
+            padding: 10px 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--copper);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s var(--transition);
+            position: relative;
+        }
+
+        .nav-section-header::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 0;
+            background: var(--copper);
+            transition: height 0.3s var(--transition);
+        }
+
+        .nav-section-header:hover::before,
+        .nav-section-header.active::before {
+            height: 100%;
+        }
+
+        .nav-section-header:hover {
+            color: var(--accent);
+            background: rgba(0, 212, 255, 0.05);
+        }
+
+        .nav-section-header .chevron {
+            margin-left: auto;
+            transition: transform 0.3s var(--transition);
+            flex-shrink: 0;
+        }
+
+        .nav-section.expanded .nav-section-header .chevron {
+            transform: rotate(180deg);
+        }
+
+        .nav-section-items {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s var(--transition);
+        }
+
+        .nav-section.expanded .nav-section-items {
+            max-height: 500px;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 8px 20px 8px 35px;
+            font-family: 'Manrope', sans-serif;
+            font-size: 12px;
+            color: var(--text-dim);
+            text-decoration: none;
+            transition: all 0.3s var(--transition);
+            position: relative;
+            border-left: 2px solid transparent;
+        }
+
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: rgba(0, 212, 255, 0.3);
+            transition: all 0.3s var(--transition);
+        }
+
+        .nav-item:hover {
+            color: var(--accent);
+            background: rgba(0, 212, 255, 0.05);
+            padding-left: 40px;
+        }
+
+        .nav-item:hover::before {
+            background: var(--accent);
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .nav-item.active {
+            color: var(--accent);
+            background: rgba(0, 212, 255, 0.08);
+            border-left-color: var(--accent);
+        }
+
+        .nav-item.active::before {
+            background: var(--accent);
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .nav-item-main {
+            padding-left: 20px;
+            font-weight: 500;
+            font-size: 13px;
+        }
+
+        .nav-item-main::before {
+            display: none;
+        }
+
+        .nav-divider {
+            height: 1px;
+            background: rgba(0, 212, 255, 0.1);
+            margin: 15px 20px;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            margin-left: var(--sidenav-width);
+            position: relative;
+            z-index: 2;
         }
 
         /* Scroll Fade Animations */
@@ -200,97 +382,24 @@
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 0 40px;
             position: relative;
             z-index: 2;
         }
 
-        /* Header */
+        /* Header - Hidden on desktop since we have side nav */
         header {
-            padding: 40px 0;
-            position: sticky;
-            top: 0;
-            background: rgba(10, 14, 39, 0.8);
-            backdrop-filter: blur(20px);
-            z-index: 100;
-            border-bottom: 1px solid rgba(0, 212, 255, 0.1);
-            animation: slideDown 0.8s var(--transition);
-        }
-
-        @keyframes slideDown {
-            from { transform: translateY(-100%); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 28px;
-            font-weight: 900;
-            background: linear-gradient(135deg, var(--accent), var(--copper));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: 2px;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 40px;
-            list-style: none;
-        }
-
-        .nav-links a {
-            font-family: 'JetBrains Mono', monospace;
-            color: var(--text-dim);
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 500;
-            letter-spacing: 0.5px;
-            transition: color 0.3s var(--transition);
-            position: relative;
-        }
-
-        .nav-links a::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: var(--accent);
-            transition: width 0.3s var(--transition);
-        }
-
-        .nav-links a:hover {
-            color: var(--accent);
-        }
-
-        .nav-links a:hover::after {
-            width: 100%;
-        }
-
-        .nav-links a.active {
-            color: var(--accent);
-        }
-
-        .nav-links a.active::after {
-            width: 100%;
+            display: none;
         }
 
         /* Hero Section */
         .hero {
-            min-height: 70vh;
+            min-height: 100vh;
             display: flex;
             align-items: center;
-            padding: 60px 0 30px;
+            padding: 60px 0;
             position: relative;
         }
 
@@ -321,7 +430,7 @@
 
         .hero h1 {
             font-family: 'Orbitron', sans-serif;
-            font-size: 72px;
+            font-size: 64px;
             font-weight: 900;
             line-height: 1.1;
             margin-bottom: 30px;
@@ -332,7 +441,7 @@
         }
 
         .hero p {
-            font-size: 20px;
+            font-size: 18px;
             color: var(--text-dim);
             margin-bottom: 50px;
             line-height: 1.8;
@@ -401,7 +510,7 @@
 
         /* About Section */
         .about {
-            padding: 40px 0 40px;
+            padding: 100px 0 80px;
             position: relative;
         }
 
@@ -473,7 +582,7 @@
 
         /* Projects Section */
         .projects {
-            padding: 30px 0 120px;
+            padding: 80px 0 120px;
             background: linear-gradient(180deg, var(--primary) 0%, var(--secondary) 100%);
         }
 
@@ -490,8 +599,8 @@
             transition: all 0.5s var(--transition);
             position: relative;
             display: grid;
-            grid-template-columns: 400px 1fr;
-            min-height: 350px;
+            grid-template-columns: 350px 1fr;
+            min-height: 320px;
             opacity: 0;
             animation: fadeInUp 0.8s var(--transition) forwards;
             cursor: pointer;
@@ -573,7 +682,7 @@
         }
 
         .project-content {
-            padding: 40px;
+            padding: 35px;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -583,14 +692,14 @@
             display: flex;
             align-items: center;
             gap: 15px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .project-number {
             font-family: 'Orbitron', sans-serif;
-            font-size: 14px;
+            font-size: 12px;
             color: var(--copper);
-            padding: 8px 16px;
+            padding: 6px 14px;
             background: rgba(200, 117, 51, 0.1);
             border: 1px solid var(--copper);
             border-radius: 20px;
@@ -598,10 +707,10 @@
 
         .project-title {
             font-family: 'Orbitron', sans-serif;
-            font-size: 28px;
+            font-size: 24px;
             font-weight: 700;
             color: var(--text);
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
 
         .project-title a:hover {
@@ -610,26 +719,26 @@
         }
 
         .project-description {
-            font-size: 16px;
+            font-size: 14px;
             color: var(--text-dim);
             line-height: 1.7;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
 
         .project-tags {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 8px;
+            margin-bottom: 15px;
         }
 
         .tag {
-            padding: 6px 14px;
+            padding: 5px 12px;
             background: rgba(0, 212, 255, 0.1);
             border: 1px solid rgba(0, 212, 255, 0.3);
             border-radius: 15px;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
+            font-size: 10px;
             color: var(--accent);
             letter-spacing: 0.5px;
         }
@@ -641,7 +750,7 @@
 
         .project-link {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 13px;
+            font-size: 12px;
             color: var(--accent);
             text-decoration: none;
             display: flex;
@@ -678,7 +787,7 @@
         }
 
         .contact-text {
-            font-size: 20px;
+            font-size: 18px;
             color: var(--text-dim);
             margin-bottom: 50px;
             line-height: 1.8;
@@ -687,7 +796,7 @@
         .contact-links {
             display: flex;
             justify-content: center;
-            gap: 30px;
+            gap: 25px;
             flex-wrap: wrap;
         }
 
@@ -695,14 +804,14 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 16px 32px;
+            padding: 14px 28px;
             background: rgba(26, 31, 58, 0.6);
             border: 1px solid rgba(0, 212, 255, 0.2);
             border-radius: 50px;
             color: var(--text);
             text-decoration: none;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 14px;
+            font-size: 13px;
             transition: all 0.3s var(--transition);
         }
 
@@ -722,37 +831,143 @@
 
         footer p {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 13px;
+            font-size: 12px;
             color: var(--text-dim);
         }
 
-        /* Responsive */
-        @media (max-width: 1024px) {
-            .project-card {
-                grid-template-columns: 1fr;
-                height: auto;
-            }
+        /* Mobile Navigation Toggle */
+        .mobile-nav-toggle {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: rgba(10, 14, 39, 0.95);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            color: var(--accent);
+        }
 
-            .project-visual {
-                height: 250px;
+        .mobile-nav-toggle .hamburger {
+            width: 24px;
+            height: 18px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .mobile-nav-toggle .hamburger span {
+            display: block;
+            width: 100%;
+            height: 2px;
+            background: var(--accent);
+            border-radius: 2px;
+            transition: all 0.3s var(--transition);
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .project-card {
+                grid-template-columns: 300px 1fr;
             }
         }
 
-        @media (max-width: 768px) {
-            .container {
-                padding: 0 20px;
+        @media (max-width: 1024px) {
+            :root {
+                --sidenav-width: 250px;
+            }
+
+            .project-card {
+                grid-template-columns: 1fr;
+                min-height: auto;
+            }
+
+            .project-visual {
+                height: 220px;
             }
 
             .hero h1 {
                 font-size: 48px;
             }
+        }
 
-            .section-title {
+        @media (max-width: 768px) {
+            :root {
+                --sidenav-width: 0px;
+            }
+
+            .mobile-nav-toggle {
+                display: block;
+            }
+
+            .side-nav {
+                width: 280px;
+                transform: translateX(-100%);
+                transition: transform 0.3s var(--transition);
+            }
+
+            .side-nav.open {
+                transform: translateX(0);
+            }
+
+            .side-nav-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 999;
+                opacity: 0;
+                visibility: hidden;
+                transition: all 0.3s var(--transition);
+            }
+
+            .side-nav-overlay.visible {
+                opacity: 1;
+                visibility: visible;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .scroll-progress {
+                left: 0;
+                width: 100%;
+            }
+
+            .background-grid,
+            .particles {
+                left: 0;
+                width: 100%;
+            }
+
+            .glow-orb-1 {
+                left: -200px;
+            }
+
+            .container {
+                padding: 0 20px;
+            }
+
+            .hero {
+                padding-top: 100px;
+            }
+
+            .hero h1 {
                 font-size: 36px;
             }
 
-            .nav-links {
-                display: none;
+            .hero p {
+                font-size: 16px;
+            }
+
+            .section-title {
+                font-size: 32px;
             }
 
             .expertise-grid {
@@ -765,6 +980,10 @@
 
             .btn {
                 text-align: center;
+            }
+
+            .contact-title {
+                font-size: 36px;
             }
         }
 
@@ -779,6 +998,24 @@
             opacity: 1;
             transform: translateY(0);
         }
+
+        /* Custom Scrollbar for Side Nav */
+        .side-nav::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .side-nav::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .side-nav::-webkit-scrollbar-thumb {
+            background: rgba(0, 212, 255, 0.3);
+            border-radius: 2px;
+        }
+
+        .side-nav::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
     </style>
 </head>
 <body>
@@ -788,7 +1025,93 @@
     </div>
     
     <!-- Scroll Progress Bar -->
-    <div class="scroll-progress"></div>
+    <div class="scroll-progress">
+        <div class="scroll-progress-bar"></div>
+    </div>
+
+    <!-- Mobile Navigation Toggle -->
+    <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Toggle navigation">
+        <div class="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </button>
+
+    <!-- Mobile Overlay -->
+    <div class="side-nav-overlay" id="sideNavOverlay"></div>
+
+    <!-- Permanent Side Navigation -->
+    <nav class="side-nav" id="sideNav">
+        <div class="side-nav-header">
+            <div class="side-nav-logo">MONTEE<br>OLUWOLE</div>
+            <div class="side-nav-subtitle">Automation & Robotics</div>
+        </div>
+        <div class="side-nav-content">
+            <!-- Main Sections -->
+            <div class="nav-section">
+                <a href="#hero" class="nav-item nav-item-main" data-section="hero">Home</a>
+            </div>
+
+            <div class="nav-section">
+                <a href="#about" class="nav-item nav-item-main" data-section="about">About</a>
+            </div>
+
+            <div class="nav-divider"></div>
+
+            <!-- Personal Projects -->
+            <div class="nav-section expanded">
+                <div class="nav-section-header" data-section="personal-projects">
+                    Personal Projects
+                    <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </div>
+                <div class="nav-section-items">
+                    <a href="#multi-sensor-grasping" class="nav-item" data-section="multi-sensor-grasping">Robotic Grasping</a>
+                    <a href="#sensor-fusion" class="nav-item" data-section="sensor-fusion">Sensor Fusion</a>
+                    <a href="#swarm-drones" class="nav-item" data-section="swarm-drones">Swarm Drones</a>
+                    <a href="#laminate-optimization" class="nav-item" data-section="laminate-optimization">Laminate Optimization</a>
+                </div>
+            </div>
+
+            <!-- Professional Projects -->
+            <div class="nav-section expanded">
+                <div class="nav-section-header" data-section="professional-projects">
+                    Professional
+                    <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </div>
+                <div class="nav-section-items">
+                    <a href="#solidworks-automation" class="nav-item" data-section="solidworks-automation">SolidWorks API</a>
+                    <a href="#python-tools" class="nav-item" data-section="python-tools">Python Tools</a>
+                    <a href="#cnc-dfma" class="nav-item" data-section="cnc-dfma">CNC & DFMA</a>
+                </div>
+            </div>
+
+            <!-- Academic Projects -->
+            <div class="nav-section expanded">
+                <div class="nav-section-header" data-section="academic-projects">
+                    Academic
+                    <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </div>
+                <div class="nav-section-items">
+                    <a href="#pid-suspension" class="nav-item" data-section="pid-suspension">PID Suspension</a>
+                    <a href="#flutter-analysis" class="nav-item" data-section="flutter-analysis">Flutter Analysis</a>
+                </div>
+            </div>
+
+            <div class="nav-divider"></div>
+
+            <!-- Contact -->
+            <div class="nav-section">
+                <a href="#contact" class="nav-item nav-item-main" data-section="contact">Contact</a>
+            </div>
+        </div>
+    </nav>
     
     <!-- Particles Background -->
     <div class="particles" id="particles"></div>
@@ -797,339 +1120,399 @@
     <div class="glow-orb glow-orb-1"></div>
     <div class="glow-orb glow-orb-2"></div>
 
-    <header>
-        <div class="container">
-            <nav>
-                <div class="logo">MONTEE OLUWOLE</div>
-                <ul class="nav-links">
-                    <li><a href="#about">ABOUT</a></li>
-                    <li><a href="#projects">PROJECTS</a></li>
-                    <li><a href="#contact">CONTACT</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
-
-    <main>
-        <section class="hero">
-            <div class="container">
-                <div class="hero-content">
-                    <div class="hero-label">M.ENG MECHANICAL ENGINEERING '22 • AUTOMATION • ROBOTICS • DESIGN</div>
-                    <h1>Developing Advanced Solutions in Robotics, Automation & Design</h1>
-                    <p>Expertise spans swarm robotics, sensor fusion for autonomous driving, and robotic dexterity alongside industrial applications in DFMA, CNC programming, and line form programming. Streamlining manufacturing workflows through Python automation and SolidWorks macros while advancing research in multi-agent optimization and formation control.</p>
-                    <div class="cta-buttons">
-                        <a href="#projects" class="btn btn-primary">EXPLORE PROJECTS</a>
-                        <a href="#contact" class="btn btn-secondary">GET IN TOUCH</a>
+    <!-- Main Content -->
+    <div class="main-content">
+        <main>
+            <section id="hero" class="hero">
+                <div class="container">
+                    <div class="hero-content">
+                        <div class="hero-label">M.ENG MECHANICAL ENGINEERING '22 • AUTOMATION • ROBOTICS • DESIGN</div>
+                        <h1>Developing Advanced Solutions in Robotics, Automation & Design</h1>
+                        <p>Expertise spans swarm robotics, sensor fusion for autonomous driving, and robotic dexterity alongside industrial applications in DFMA, CNC programming, and line form programming. Streamlining manufacturing workflows through Python automation and SolidWorks macros while advancing research in multi-agent optimization and formation control.</p>
+                        <div class="cta-buttons">
+                            <a href="#projects" class="btn btn-primary">EXPLORE PROJECTS</a>
+                            <a href="#contact" class="btn btn-secondary">GET IN TOUCH</a>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <section id="about" class="about">
-            <div class="container">
-                <div class="section-header scroll-fade">
-                    <div class="section-tag">BACKGROUND</div>
-                    <h2 class="section-title">Engineering Excellence</h2>
+            <section id="about" class="about">
+                <div class="container">
+                    <div class="section-header scroll-fade">
+                        <div class="section-tag">BACKGROUND</div>
+                        <h2 class="section-title">Engineering Excellence</h2>
+                    </div>
+
+                    <div class="about-content">
+                        <div class="about-text">
+                            <p>Automation and Robotics Engineer with a Master of Engineering in Mechanical Engineering from Concordia University (2022). Passionate about advancing the intersection of intelligent systems and practical engineering, with expertise spanning multi-agent coordination, sensor fusion, advanced control algorithms, and manufacturing automation.</p>
+                            
+                            <p>Currently seeking PhD opportunities to deepen research in intelligent systems and robotics while developing automation solutions at WAM Industries and Maxxit Group. Creating Python tools and SolidWorks API workflows that streamline manufacturing processes, demonstrating a commitment to bridging cutting-edge research with real-world engineering impact.</p>
+
+                            <div class="expertise-grid">
+                                <div class="expertise-item">Control Systems</div>
+                                <div class="expertise-item">Python / MATLAB</div>
+                                <div class="expertise-item">ROS / PyBullet</div>
+                                <div class="expertise-item">Sensor Fusion</div>
+                                <div class="expertise-item">Optimization</div>
+                                <div class="expertise-item">SolidWorks API</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+            </section>
 
-                <div class="about-content">
-                    <div class="about-text">
-                        <p>Automation and Robotics Engineer with a Master of Engineering in Mechanical Engineering from Concordia University (2022). Passionate about advancing the intersection of intelligent systems and practical engineering, with expertise spanning multi-agent coordination, sensor fusion, advanced control algorithms, and manufacturing automation.</p>
+            <!-- Personal Projects Section -->
+            <section id="projects" class="projects">
+                <div class="container">
+                    <div class="section-header scroll-fade">
+                        <div class="section-tag">PERSONAL PROJECTS</div>
+                        <h2 class="section-title">Independent Research & Development</h2>
+                    </div>
+
+                    <div class="projects-grid">
+                        <div id="multi-sensor-grasping" class="project-card">
+                            <div class="project-visual">
+                                <div class="project-icon"><img src="images/Robot_Hand.jpg" alt="Robotic Hand"></div>
+                            </div>
+                            <div class="project-content">
+                                <div class="project-header">
+                                    <span class="project-number">01</span>
+                                </div>
+                                <h3 class="project-title"><a href="multi-sensor-grasping.html" style="color: inherit; text-decoration: none;">Multi-Sensor Robotic Grasping</a></h3>
+                                <p class="project-description">Learning from demonstration system using somatosensory glove teleoperation. Multi-sensor analysis (touch, accelerometer, ultrasonic, camera) identifies success patterns and refines trajectories for ≥25% improvement in grasp success rate.</p>
+                                <div class="project-tags">
+                                    <span class="tag">ROS Noetic</span>
+                                    <span class="tag">Arduino</span>
+                                    <span class="tag">Learning from Demo</span>
+                                    <span class="tag">Sensor Fusion</span>
+                                </div>
+                                <div class="project-links">
+                                    <a href="multi-sensor-grasping.html" class="project-link">VIEW DETAILS →</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="sensor-fusion" class="project-card">
+                            <div class="project-visual">
+                                <div class="project-icon"><img src="images/TabImageSelfDriving.JPG" alt="Autonomous Driving"></div>
+                            </div>
+                            <div class="project-content">
+                                <div class="project-header">
+                                    <span class="project-number">02</span>
+                                </div>
+                                <h3 class="project-title"><a href="sensor-fusion.html" style="color: inherit; text-decoration: none;">Sensor Fusion for Autonomous Driving</a></h3>
+                                <p class="project-description">Multi-sensor 3D object tracking using camera-LiDAR fusion with Extended Kalman Filter and Interacting Multiple Models. Achieved 78.4% MOTA on KITTI benchmark with 0.42m position error and 92% track retention through 5+ second occlusions.</p>
+                                <div class="project-tags">
+                                    <span class="tag">EKF</span>
+                                    <span class="tag">IMM</span>
+                                    <span class="tag">KITTI Dataset</span>
+                                    <span class="tag">Camera-LiDAR</span>
+                                </div>
+                                <div class="project-links">
+                                    <a href="sensor-fusion.html" class="project-link">VIEW DETAILS →</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="swarm-drones" class="project-card">
+                            <div class="project-visual">
+                                <div class="project-icon"><img src="images/SwarmDroneTab.jpg" alt="Swarm Drones"></div>
+                            </div>
+                            <div class="project-content">
+                                <div class="project-header">
+                                    <span class="project-number">03</span>
+                                </div>
+                                <h3 class="project-title"><a href="swarm-drones.html" style="color: inherit; text-decoration: none;">Swarm Drones Simulation</a></h3>
+                                <p class="project-description">Comprehensive platform for 20 quadrotor agents forming complex 3D patterns (helix, mandala, dragon, Canadian flag). Features energy optimization, collision avoidance with proximity-based decay, and real-time safety monitoring with contingency reserves.</p>
+                                <div class="project-tags">
+                                    <span class="tag">PyBullet</span>
+                                    <span class="tag">Formation Control</span>
+                                    <span class="tag">SciPy Optimize</span>
+                                    <span class="tag">Multi-Agent</span>
+                                </div>
+                                <div class="project-links">
+                                    <a href="swarm-drones.html" class="project-link">VIEW DETAILS →</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="laminate-optimization" class="project-card">
+                            <div class="project-visual">
+                                <div class="project-icon"><img src="images/Laminate_Tab.jpeg" alt="Composite Laminate"></div>
+                            </div>
+                            <div class="project-content">
+                                <div class="project-header">
+                                    <span class="project-number">04</span>
+                                </div>
+                                <h3 class="project-title"><a href="laminate-optimization.html" style="color: inherit; text-decoration: none;">Laminate Optimization</a></h3>
+                                <p class="project-description">Advanced optimization framework for composite material design using Python. Implements Monte Carlo search and classical lamination theory for optimal fiber orientation and stacking sequences. Achieved 13.43 kg total mass across 4 fuselage bays.</p>
+                                <div class="project-tags">
+                                    <span class="tag">Python</span>
+                                    <span class="tag">CLT</span>
+                                    <span class="tag">Tsai-Wu Criterion</span>
+                                    <span class="tag">Composites</span>
+                                </div>
+                                <div class="project-links">
+                                    <a href="laminate-optimization.html" class="project-link">VIEW DETAILS →</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Professional Projects Section -->
+            <section id="professional-projects" class="projects" style="background: linear-gradient(180deg, var(--secondary) 0%, var(--primary) 100%);">
+                <div class="container">
+                    <div class="section-header scroll-fade">
+                        <div class="section-tag">PROFESSIONAL PROJECTS</div>
+                        <h2 class="section-title">Industry Experience</h2>
+                        <p style="color: var(--text-dim); font-size: 16px; max-width: 800px; margin: 20px auto 0; text-align: center;">Automation solutions and manufacturing optimization at WAM Industries and Maxxit Group</p>
+                    </div>
+
+                    <div class="projects-grid">
+                        <div id="solidworks-automation" class="project-card">
+                            <div class="project-visual">
+                                <div class="project-icon"><img src="images/SOLIDWORKS_AUTOMATION.jpg" alt="SolidWorks Automation"></div>
+                            </div>
+                            <div class="project-content">
+                                <div class="project-header">
+                                    <span class="project-number">01</span>
+                                </div>
+                                <h3 class="project-title"><a href="solidworks-automation.html" style="color: inherit; text-decoration: none;">SolidWorks API & VBA Automation</a></h3>
+                                <p class="project-description">Developed comprehensive VBA macros for SolidWorks automation including DXF/DWG export systems, PDF generation, and manufacturing workflow optimization. Created sheet metal export macros with bend line detection and direction analysis capabilities.</p>
+                                <div class="project-tags">
+                                    <span class="tag">SolidWorks API</span>
+                                    <span class="tag">VBA</span>
+                                    <span class="tag">Manufacturing</span>
+                                    <span class="tag">CAD Automation</span>
+                                </div>
+                                <div class="project-links">
+                                    <a href="solidworks-automation.html" class="project-link">VIEW DETAILS →</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="python-tools" class="project-card">
+                            <div class="project-visual">
+                                <div class="project-icon"><img src="images/PYTHON_SOLIDWORKS.jpg" alt="Python Engineering"></div>
+                            </div>
+                            <div class="project-content">
+                                <div class="project-header">
+                                    <span class="project-number">02</span>
+                                </div>
+                                <h3 class="project-title"><a href="python-tools.html" style="color: inherit; text-decoration: none;">Python Engineering Tools</a></h3>
+                                <p class="project-description">Developed custom Python applications for manufacturing workflow optimization. Created DXF layer filter for CNC toolpaths, bounding box measurement system for dimensional verification, and designed Python-SolidWorks API integration framework.</p>
+                                <div class="project-tags">
+                                    <span class="tag">Python</span>
+                                    <span class="tag">DXF Processing</span>
+                                    <span class="tag">SolidWorks API</span>
+                                    <span class="tag">Automation</span>
+                                </div>
+                                <div class="project-links">
+                                    <a href="python-tools.html" class="project-link">VIEW DETAILS →</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="cnc-dfma" class="project-card">
+                            <div class="project-visual">
+                                <div class="project-icon"><img src="images/CNC.jpeg" alt="CNC Machining"></div>
+                            </div>
+                            <div class="project-content">
+                                <div class="project-header">
+                                    <span class="project-number">03</span>
+                                </div>
+                                <h3 class="project-title"><a href="cnc-dfma.html" style="color: inherit; text-decoration: none;">CNC Programming & DFMA</a></h3>
+                                <p class="project-description">Comprehensive manufacturing engineering across aerospace, architectural metalwork, retail fixtures, and precision tooling. Specialized in advanced CNC programming, DFMA principles, and toolpath optimization for complex projects requiring ±0.001" tolerances.</p>
+                                <div class="project-tags">
+                                    <span class="tag">Mastercam</span>
+                                    <span class="tag">5-Axis CNC</span>
+                                    <span class="tag">DFMA</span>
+                                    <span class="tag">Toolpath Optimization</span>
+                                </div>
+                                <div class="project-links">
+                                    <a href="cnc-dfma.html" class="project-link">VIEW DETAILS →</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Academic Projects Section -->
+            <section id="academic-projects" class="projects" style="background: linear-gradient(180deg, var(--primary) 0%, var(--secondary) 100%);">
+                <div class="container">
+                    <div class="section-header scroll-fade">
+                        <div class="section-tag">ACADEMIC PROJECTS</div>
+                        <h2 class="section-title">M.Eng Mechanical Engineering</h2>
+                        <p style="color: var(--text-dim); font-size: 16px; max-width: 800px; margin: 20px auto 0; text-align: center;">Concordia University, 2022</p>
+                    </div>
+
+                    <div class="projects-grid">
+                        <div id="pid-suspension" class="project-card">
+                            <div class="project-visual">
+                                <div class="project-icon"><img src="images/SUSPENSION_TAB.jpg" alt="Suspension System"></div>
+                            </div>
+                            <div class="project-content">
+                                <div class="project-header">
+                                    <span class="project-number">01</span>
+                                </div>
+                                <h3 class="project-title"><a href="pid-suspension.html" style="color: inherit; text-decoration: none;">PID Controller-Based Semi-Active Suspension</a></h3>
+                                <p class="project-description">Designed and optimized PID controller for quarter-car semi-active suspension system using MATLAB/Simulink. Achieved improved ride comfort through manual tuning analysis across three road disturbance profiles.</p>
+                                <div class="project-tags">
+                                    <span class="tag">Control Systems</span>
+                                    <span class="tag">PID Tuning</span>
+                                    <span class="tag">MATLAB/Simulink</span>
+                                    <span class="tag">Vehicle Dynamics</span>
+                                </div>
+                                <div class="project-links">
+                                    <a href="pid-suspension.html" class="project-link">VIEW DETAILS →</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="flutter-analysis" class="project-card">
+                            <div class="project-visual">
+                                <div class="project-icon"><img src="https://i.imgur.com/6R2sY3m.gif" alt="Wing Flutter"></div>
+                            </div>
+                            <div class="project-content">
+                                <div class="project-header">
+                                    <span class="project-number">02</span>
+                                </div>
+                                <h3 class="project-title"><a href="flutter-analysis.html" style="color: inherit; text-decoration: none;">Aeroelasticity Analysis: Flutter</a></h3>
+                                <p class="project-description">Performed comprehensive flutter analysis for aircraft wing structures using P-method and PK-method in MATLAB. Evaluated stability boundaries, frequency responses, and damping characteristics under varying flight conditions.</p>
+                                <div class="project-tags">
+                                    <span class="tag">Aeroelasticity</span>
+                                    <span class="tag">Flutter Analysis</span>
+                                    <span class="tag">MATLAB</span>
+                                    <span class="tag">Aerospace</span>
+                                </div>
+                                <div class="project-links">
+                                    <a href="flutter-analysis.html" class="project-link">VIEW DETAILS →</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="contact" class="contact">
+                <div class="container">
+                    <div class="contact-content scroll-fade">
+                        <h2 class="contact-title">Let's Connect</h2>
+                        <p class="contact-text">Interested in collaboration, research opportunities, or discussing robotics and autonomous systems? I'm always open to connecting with fellow engineers and researchers.</p>
                         
-                        <p>Currently seeking PhD opportunities to deepen research in intelligent systems and robotics while developing automation solutions at WAM Industries and Maxxit Group. Creating Python tools and SolidWorks API workflows that streamline manufacturing processes, demonstrating a commitment to bridging cutting-edge research with real-world engineering impact.</p>
-
-                        <div class="expertise-grid">
-                            <div class="expertise-item">Control Systems</div>
-                            <div class="expertise-item">Python / MATLAB</div>
-                            <div class="expertise-item">ROS / PyBullet</div>
-                            <div class="expertise-item">Sensor Fusion</div>
-                            <div class="expertise-item">Optimization</div>
-                            <div class="expertise-item">SolidWorks API</div>
+                        <div class="contact-links">
+                            <a href="mailto:motunrayooluwole@gmail.com" class="contact-link">
+                                <span>EMAIL</span>
+                            </a>
+                            <a href="https://github.com/DevMontee" class="contact-link" target="_blank">
+                                <span>GITHUB</span>
+                            </a>
+                            <a href="https://www.linkedin.com/in/montee-oluwole-26164bb3/" class="contact-link" target="_blank">
+                                <span>LINKEDIN</span>
+                            </a>
                         </div>
                     </div>
-
-
                 </div>
-            </div>
-        </section>
+            </section>
+        </main>
 
-        <!-- Personal Projects Section -->
-        <section id="projects" class="projects">
+        <footer>
             <div class="container">
-                <div class="section-header scroll-fade">
-                    <div class="section-tag">PERSONAL PROJECTS</div>
-                    <h2 class="section-title">Independent Research & Development</h2>
-                </div>
-
-                <div class="projects-grid">
-                    <div class="project-card">
-                        <div class="project-visual">
-                            <div class="project-icon"><img src="images/SwarmDroneTab.jpg" alt="Swarm Drones"></div>
-                        </div>
-                        <div class="project-content">
-                            <div class="project-header">
-                                <span class="project-number">01</span>
-                            </div>
-                            <h3 class="project-title"><a href="swarm-drones.html" style="color: inherit; text-decoration: none;">Swarm Drones Simulation</a></h3>
-                            <p class="project-description">Comprehensive platform for 20 quadrotor agents forming complex 3D patterns (helix, mandala, dragon, Canadian flag). Features energy optimization, collision avoidance with proximity-based decay, and real-time safety monitoring with contingency reserves.</p>
-                            <div class="project-tags">
-                                <span class="tag">PyBullet</span>
-                                <span class="tag">Formation Control</span>
-                                <span class="tag">SciPy Optimize</span>
-                                <span class="tag">Multi-Agent</span>
-                                <span class="tag">Real-Time Visualization</span>
-                            </div>
-                            <div class="project-links">
-                                <a href="swarm-drones.html" class="project-link">VIEW DETAILS →</a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="project-card">
-                        <div class="project-visual">
-                            <div class="project-icon"><img src="images/TabImageSelfDriving.JPG" alt="Autonomous Driving"></div>
-                        </div>
-                        <div class="project-content">
-                            <div class="project-header">
-                                <span class="project-number">02</span>
-                            </div>
-                            <h3 class="project-title"><a href="sensor-fusion.html" style="color: inherit; text-decoration: none;">Sensor Fusion for Autonomous Driving</a></h3>
-                            <p class="project-description">Multi-sensor 3D object tracking using camera-LiDAR fusion with Extended Kalman Filter and Interacting Multiple Models. Achieved 78.4% MOTA on KITTI benchmark with 0.42m position error and 92% track retention through 5+ second occlusions.</p>
-                            <div class="project-tags">
-                                <span class="tag">EKF</span>
-                                <span class="tag">IMM</span>
-                                <span class="tag">KITTI Dataset</span>
-                                <span class="tag">Camera-LiDAR</span>
-                                <span class="tag">3D Tracking</span>
-                            </div>
-                            <div class="project-links">
-                                <a href="sensor-fusion.html" class="project-link">VIEW DETAILS →</a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="project-card">
-                        <div class="project-visual">
-                            <div class="project-icon"><img src="images/Hand_3.JPG" alt="Robotic Hand"></div>
-                        </div>
-                        <div class="project-content">
-                            <div class="project-header">
-                                <span class="project-number">03</span>
-                            </div>
-                            <h3 class="project-title"><a href="multi-sensor-grasping.html" style="color: inherit; text-decoration: none;">Multi-Sensor Demonstration Refinement for Robotic Grasping</a></h3>
-                            <p class="project-description">Learning from demonstration system using somatosensory glove teleoperation. Multi-sensor analysis (touch, accelerometer, ultrasonic, camera) identifies success patterns and refines trajectories for ≥25% improvement in grasp success rate.</p>
-                            <div class="project-tags">
-                                <span class="tag">ROS Noetic</span>
-                                <span class="tag">Arduino</span>
-                                <span class="tag">Learning from Demo</span>
-                                <span class="tag">Sensor Fusion</span>
-                            </div>
-                            <div class="project-links">
-                                <a href="multi-sensor-grasping.html" class="project-link">VIEW DETAILS →</a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="project-card">
-                        <div class="project-visual">
-                            <div class="project-icon"><img src="images/Laminate_Tab.jpeg" alt="Composite Laminate"></div>
-                        </div>
-                        <div class="project-content">
-                            <div class="project-header">
-                                <span class="project-number">04</span>
-                            </div>
-                            <h3 class="project-title"><a href="laminate-optimization.html" style="color: inherit; text-decoration: none;">Laminate Optimization</a></h3>
-                            <p class="project-description">Advanced optimization framework for composite material design using Python. Implements Monte Carlo search and classical lamination theory for optimal fiber orientation and stacking sequences. Achieved 13.43 kg total mass across 4 fuselage bays with positive margins of safety.</p>
-                            <div class="project-tags">
-                                <span class="tag">Python</span>
-                                <span class="tag">CLT</span>
-                                <span class="tag">Tsai-Wu Criterion</span>
-                                <span class="tag">Composite Optimization</span>
-                            </div>
-                            <div class="project-links">
-                                <a href="laminate-optimization.html" class="project-link">VIEW DETAILS →</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <p>© 2025 Montee Oluwole • M.Eng Mechanical Engineering • Automation & Robotics Engineer</p>
             </div>
-        </section>
+        </footer>
+    </div>
 
-        <!-- Professional Projects Section -->
-        <section class="projects" style="background: linear-gradient(180deg, var(--secondary) 0%, var(--primary) 100%);">
-            <div class="container">
-                <div class="section-header scroll-fade">
-                    <div class="section-tag">PROFESSIONAL PROJECTS</div>
-                    <h2 class="section-title">Industry Experience</h2>
-                    <p style="color: var(--text-dim); font-size: 18px; max-width: 800px; margin: 20px auto 0; text-align: center;">Automation solutions and manufacturing optimization at WAM Industries and Maxxit Group</p>
-                </div>
+    <script>
+        // Mobile Navigation
+        const sideNav = document.getElementById('sideNav');
+        const mobileNavToggle = document.getElementById('mobileNavToggle');
+        const sideNavOverlay = document.getElementById('sideNavOverlay');
 
-                <div class="projects-grid">
-                    <div class="project-card">
-                        <div class="project-visual">
-                            <div class="project-icon"><img src="images/SOLIDWORKS_AUTOMATION.jpg" alt="SolidWorks Automation"></div>
-                        </div>
-                        <div class="project-content">
-                            <div class="project-header">
-                                <span class="project-number">01</span>
-                            </div>
-                            <h3 class="project-title"><a href="solidworks-automation.html" style="color: inherit; text-decoration: none;">SolidWorks API & VBA Automation</a></h3>
-                            <p class="project-description">Developed comprehensive VBA macros for SolidWorks automation including DXF/DWG export systems, PDF generation, and manufacturing workflow optimization. Created sheet metal export macros with bend line detection and direction analysis capabilities.</p>
-                            <div class="project-tags">
-                                <span class="tag">SolidWorks API</span>
-                                <span class="tag">VBA</span>
-                                <span class="tag">Manufacturing</span>
-                                <span class="tag">CAD Automation</span>
-                            </div>
-                            <div class="project-links">
-                                <a href="solidworks-automation.html" class="project-link">VIEW DETAILS →</a>
-                            </div>
-                        </div>
-                    </div>
+        function openMobileNav() {
+            sideNav.classList.add('open');
+            sideNavOverlay.classList.add('visible');
+            document.body.style.overflow = 'hidden';
+        }
 
-                    <div class="project-card">
-                        <div class="project-visual">
-                            <div class="project-icon"><img src="images/PYTHON_SOLIDWORKS.jpg" alt="Python Engineering"></div>
-                        </div>
-                        <div class="project-content">
-                            <div class="project-header">
-                                <span class="project-number">02</span>
-                            </div>
-                            <h3 class="project-title"><a href="python-tools.html" style="color: inherit; text-decoration: none;">Python Engineering Tools</a></h3>
-                            <p class="project-description">Developed custom Python applications for manufacturing workflow optimization. Created DXF layer filter for CNC toolpaths, bounding box measurement system for dimensional verification, and designed Python-SolidWorks API integration framework for automated drawing generation.</p>
-                            <div class="project-tags">
-                                <span class="tag">Python</span>
-                                <span class="tag">DXF Processing</span>
-                                <span class="tag">SolidWorks API</span>
-                                <span class="tag">Automation</span>
-                            </div>
-                            <div class="project-links">
-                                <a href="python-tools.html" class="project-link">VIEW DETAILS →</a>
-                            </div>
-                        </div>
-                    </div>
+        function closeMobileNav() {
+            sideNav.classList.remove('open');
+            sideNavOverlay.classList.remove('visible');
+            document.body.style.overflow = '';
+        }
 
-                    <div class="project-card">
-                        <div class="project-visual">
-                            <div class="project-icon"><img src="images/CNC.jpeg" alt="CNC Machining"></div>
-                        </div>
-                        <div class="project-content">
-                            <div class="project-header">
-                                <span class="project-number">03</span>
-                            </div>
-                            <h3 class="project-title"><a href="cnc-dfma.html" style="color: inherit; text-decoration: none;">CNC Programming & DFMA</a></h3>
-                            <p class="project-description">Comprehensive manufacturing engineering across aerospace (Limosa), architectural metalwork (Maxxit), retail fixtures (WAM), precision tooling (Lauer), and modular systems (AMSI). Specialized in advanced CNC programming, DFMA principles, and toolpath optimization for complex projects requiring ±0.001" tolerances.</p>
-                            <div class="project-tags">
-                                <span class="tag">Mastercam</span>
-                                <span class="tag">5-Axis CNC</span>
-                                <span class="tag">DFMA</span>
-                                <span class="tag">Toolpath Optimization</span>
-                            </div>
-                            <div class="project-links">
-                                <a href="cnc-dfma.html" class="project-link">VIEW DETAILS →</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
+        mobileNavToggle.addEventListener('click', openMobileNav);
+        sideNavOverlay.addEventListener('click', closeMobileNav);
 
-        <!-- Academic Projects Section -->
-        <section class="projects" style="background: linear-gradient(180deg, var(--primary) 0%, var(--secondary) 100%);">
-            <div class="container">
-                <div class="section-header scroll-fade">
-                    <div class="section-tag">ACADEMIC PROJECTS</div>
-                    <h2 class="section-title">M.Eng Mechanical Engineering</h2>
-                    <p style="color: var(--text-dim); font-size: 18px; max-width: 800px; margin: 20px auto 0; text-align: center;">Concordia University, 2022</p>
-                </div>
+        // Close mobile nav on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeMobileNav();
+        });
 
-                <div class="projects-grid">
-                    <div class="project-card">
-                        <div class="project-visual">
-                            <div class="project-icon"><img src="images/SUSPENSION_TAB.jpg" alt="Suspension System"></div>
-                        </div>
-                        <div class="project-content">
-                            <div class="project-header">
-                                <span class="project-number">01</span>
-                            </div>
-                            <h3 class="project-title"><a href="pid-suspension.html" style="color: inherit; text-decoration: none;">PID Controller-Based Semi-Active Suspension System</a></h3>
-                            <p class="project-description">Designed and optimized PID controller for quarter-car semi-active suspension system using MATLAB/Simulink. Achieved improved ride comfort through manual tuning analysis across three road disturbance profiles, demonstrating advantages over passive suspension systems.</p>
-                            <div class="project-tags">
-                                <span class="tag">Control Systems</span>
-                                <span class="tag">PID Tuning</span>
-                                <span class="tag">MATLAB/Simulink</span>
-                                <span class="tag">Vehicle Dynamics</span>
-                            </div>
-                            <div class="project-links">
-                                <a href="pid-suspension.html" class="project-link">VIEW DETAILS →</a>
-                            </div>
-                        </div>
-                    </div>
+        // Toggle section expansion
+        document.querySelectorAll('.nav-section-header').forEach(header => {
+            header.addEventListener('click', () => {
+                const section = header.parentElement;
+                section.classList.toggle('expanded');
+            });
+        });
 
-                    <div class="project-card">
-                        <div class="project-visual">
-                            <div class="project-icon"><img src="https://i.imgur.com/6R2sY3m.gif" alt="Wing Flutter"></div>
-                        </div>
-                        <div class="project-content">
-                            <div class="project-header">
-                                <span class="project-number">02</span>
-                            </div>
-                            <h3 class="project-title"><a href="flutter-analysis.html" style="color: inherit; text-decoration: none;">Aeroelasticity Analysis: Flutter</a></h3>
-                            <p class="project-description">Performed comprehensive flutter analysis for aircraft wing structures using P-method and PK-method in MATLAB. Evaluated stability boundaries, frequency responses, and damping characteristics under varying flight conditions and structural parameters.</p>
-                            <div class="project-tags">
-                                <span class="tag">Aeroelasticity</span>
-                                <span class="tag">Flutter Analysis</span>
-                                <span class="tag">MATLAB</span>
-                                <span class="tag">Aerospace</span>
-                            </div>
-                            <div class="project-links">
-                                <a href="flutter-analysis.html" class="project-link">VIEW DETAILS →</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
+        // Close mobile nav when clicking a link (mobile only)
+        document.querySelectorAll('.side-nav .nav-item').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    closeMobileNav();
+                }
+            });
+        });
 
-        <section id="contact" class="contact">
-            <div class="container">
-                <div class="contact-content scroll-fade">
-                    <h2 class="contact-title">Let's Connect</h2>
-                    <p class="contact-text">Interested in collaboration, research opportunities, or discussing robotics and autonomous systems? I'm always open to connecting with fellow engineers and researchers.</p>
-                    
-                    <div class="contact-links">
-                        <a href="mailto:motunrayooluwole@gmail.com" class="contact-link">
-                            
-                            <span>EMAIL</span>
-                        </a>
-                        <a href="https://github.com/DevMontee" class="contact-link" target="_blank">
-                            
-                            <span>GITHUB</span>
-                        </a>
-                        <a href="https://www.linkedin.com/in/montee-oluwole-26164bb3/" class="contact-link" target="_blank">
-                            
-                            <span>LINKEDIN</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
+        // Active state tracking for side nav
+        const allNavItems = document.querySelectorAll('.side-nav .nav-item');
+        const allSections = document.querySelectorAll('section[id], .project-card[id]');
 
-    <footer>
-        <div class="container">
-            <p>© 2025 Montee Oluwole • M.Eng Mechanical Engineering • Automation & Robotics Engineer</p>
-        </div>
-    </footer>
+        function updateActiveNavItem() {
+            let currentSection = '';
+            const scrollPosition = window.scrollY + 150;
 
-    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+            allSections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.offsetHeight;
+                
+                if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
+                    currentSection = section.getAttribute('id');
+                }
+            });
+
+            allNavItems.forEach(item => {
+                item.classList.remove('active');
+                if (item.getAttribute('data-section') === currentSection) {
+                    item.classList.add('active');
+                }
+            });
+        }
+
+        window.addEventListener('scroll', updateActiveNavItem);
+        updateActiveNavItem();
+
         // Smooth scrolling
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();
                 const target = document.querySelector(this.getAttribute('href'));
                 if (target) {
-                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    const headerOffset = 50;
+                    const elementPosition = target.getBoundingClientRect().top;
+                    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+                    window.scrollTo({
+                        top: offsetPosition,
+                        behavior: 'smooth'
+                    });
                 }
             });
         });
@@ -1153,10 +1536,7 @@
         // Make entire project cards clickable
         document.querySelectorAll('.project-card').forEach(card => {
             card.addEventListener('click', function(e) {
-                // Don't navigate if clicking on a link directly
                 if (e.target.tagName === 'A') return;
-                
-                // Find the first link in the card and navigate to it
                 const link = card.querySelector('.project-link, .project-title a');
                 if (link) {
                     window.location.href = link.href;
@@ -1174,58 +1554,29 @@
 
         // Scroll progress indicator
         window.addEventListener('scroll', function() {
-            const scrollProgress = document.querySelector('.scroll-progress');
+            const scrollProgressBar = document.querySelector('.scroll-progress-bar');
             const windowHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
             const scrolled = (window.scrollY / windowHeight) * 100;
-            scrollProgress.style.width = scrolled + '%';
+            scrollProgressBar.style.width = scrolled + '%';
         });
 
         // Create particles
         function createParticles() {
             const particlesContainer = document.getElementById('particles');
-            const particleCount = 50;
+            const particleCount = 40;
 
             for (let i = 0; i < particleCount; i++) {
                 const particle = document.createElement('div');
                 particle.classList.add('particle');
-                
-                // Random starting position
                 particle.style.left = Math.random() * 100 + '%';
                 particle.style.top = Math.random() * 100 + '%';
-                
-                // Random animation duration
                 particle.style.animationDuration = (Math.random() * 20 + 10) + 's';
-                
-                // Random delay
                 particle.style.animationDelay = Math.random() * 5 + 's';
-                
                 particlesContainer.appendChild(particle);
             }
         }
 
         createParticles();
-
-        // Active navigation state
-        const sections = document.querySelectorAll('section[id]');
-        const navLinks = document.querySelectorAll('.nav-links a');
-
-        window.addEventListener('scroll', () => {
-            let current = '';
-            sections.forEach(section => {
-                const sectionTop = section.offsetTop;
-                const sectionHeight = section.clientHeight;
-                if (scrollY >= (sectionTop - 200)) {
-                    current = section.getAttribute('id');
-                }
-            });
-
-            navLinks.forEach(link => {
-                link.classList.remove('active');
-                if (link.getAttribute('href').includes(current)) {
-                    link.classList.add('active');
-                }
-            });
-        });
 
         // Scroll animations for left and right slides
         const leftObserver = new IntersectionObserver((entries) => {
@@ -1246,38 +1597,6 @@
 
         document.querySelectorAll('.scroll-slide-left').forEach(el => leftObserver.observe(el));
         document.querySelectorAll('.scroll-slide-right').forEach(el => rightObserver.observe(el));
-
-        // Counter animation for stats (if any)
-        function animateCounter(element, target, duration = 2000) {
-            const start = 0;
-            const increment = target / (duration / 16);
-            let current = start;
-
-            const timer = setInterval(() => {
-                current += increment;
-                if (current >= target) {
-                    element.textContent = target;
-                    clearInterval(timer);
-                } else {
-                    element.textContent = Math.floor(current);
-                }
-            }, 16);
-        }
-
-        // Observe stat numbers and animate when in view
-        const statsObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const value = entry.target.getAttribute('data-value');
-                    if (value && !entry.target.classList.contains('counted')) {
-                        animateCounter(entry.target, parseInt(value));
-                        entry.target.classList.add('counted');
-                    }
-                }
-            });
-        }, { threshold: 0.5 });
-
-        document.querySelectorAll('[data-value]').forEach(el => statsObserver.observe(el));
     </script>
 </body>
 </html>
