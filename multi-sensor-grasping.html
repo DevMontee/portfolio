@@ -540,17 +540,17 @@
             <div class="container">
                 <h2 class="section-title" style="margin-bottom: 30px; text-align: center;">Hardware Platform Specifications</h2>
                 <p class="section-text" style="max-width: 900px; margin: 0 auto 40px auto; text-align: center;">
-                    Hiwonder 5-DOF robotic hand with integrated ESP32-based controller. Currently controlled via manual knobs, with somatosensory glove and multi-sensor integration planned for teleoperation and demonstration recording.
+                    Hiwonder 5-DOF robotic hand with integrated ESP32-based controller and somatosensory glove for teleoperation. Multi-sensor integration planned for demonstration recording.
                 </p>
                 <div class="tech-grid" style="max-width: 800px; margin: 0 auto;">
                     <div class="tech-item">5-DOF Hand ✓</div>
                     <div class="tech-item">ESP32 Controller ✓</div>
                     <div class="tech-item">Knob Control ✓</div>
-                    <div class="tech-item">Flex Glove (Pending)</div>
+                    <div class="tech-item">Flex Glove ✓</div>
                     <div class="tech-item">Touch Sensors (Pending)</div>
                     <div class="tech-item">Ultrasonic (Pending)</div>
                     <div class="tech-item">Camera (Pending)</div>
-                    <div class="tech-item">Arduino UNO (Pending)</div>
+                    <div class="tech-item">Arduino UNO ✓</div>
                 </div>
             </div>
         </section>
@@ -559,13 +559,13 @@
             <div class="container">
                 <h2 class="section-title">Current Progress</h2>
                 <p class="section-text" style="max-width: 900px; margin-bottom: 30px;">
-                    The Hiwonder robotic hand has been successfully assembled and verified through manual knob control. Each of the five servo-actuated fingers responds correctly to input commands, confirming proper mechanical assembly and electrical connections.
+                    The Hiwonder robotic hand has been successfully assembled and integrated with the somatosensory glove for teleoperation control. The flex sensors on the glove map to the robotic hand's servo-actuated fingers, enabling intuitive human-to-robot motion transfer.
                 </p>
                 
                 <div class="highlight-box">
                     <h4>Next Steps</h4>
-                    <p><strong>Immediate:</strong> Integrate the somatosensory glove with the robotic hand to enable teleoperation control, replacing manual knobs with flex sensor inputs and implementing LED visual feedback for operator guidance.</p>
-                    <p style="margin-top: 12px;"><strong>Following:</strong> Integrate additional sensors (touch, ultrasonic, camera) and develop ROS framework for synchronized multi-sensor data acquisition during demonstration collection.</p>
+                    <p><strong>Immediate:</strong> Integrate additional sensors (touch, ultrasonic, camera) and develop ROS framework for synchronized multi-sensor data acquisition during demonstration collection.</p>
+                    <p style="margin-top: 12px;"><strong>Following:</strong> Begin collecting grasping demonstrations and implement data-driven trajectory refinement pipeline.</p>
                 </div>
             </div>
         </section>
